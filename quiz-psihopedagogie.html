@@ -149,7 +149,31 @@ td.num { text-align: right; white-space: nowrap; }
 
 button:focus-visible, .chip:focus-visible, input:focus-visible { outline: 2px solid var(--pen); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
-@media (max-width: 480px) { .card { padding: 18px 14px; } .qtext { font-size: 1.1rem; } }
+.statusbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--paper); padding-block: 8px; margin-block: -8px; display: flex; flex-direction: column; gap: 6px; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--paper); }
+@media (hover: none) { .kbd { display: none; } }
+
+/* Phones: bigger tap targets, one-line scrollable subject chips, full-width actions. */
+@media (max-width: 640px) {
+  body { font-size: 16px; }
+  .wrap { padding-block: 16px 40px; gap: 14px; }
+  .sub { font-size: 0.9rem; }
+  .panel { padding: 12px; }
+  .chips { flex-wrap: nowrap; overflow-x: auto; margin-inline: -12px; padding-inline: 12px; padding-bottom: 4px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip { flex: 0 0 auto; min-height: 42px; min-width: 44px; }
+  .topic-hint { font-size: 0.82rem; }
+  .card { padding: 18px 14px; gap: 14px; border-radius: 10px; }
+  .qtext { font-size: 1.08rem; }
+  .opt { padding: 13px 12px; min-height: 52px; grid-template-columns: 22px 1fr; }
+  .seg button { flex: 1 1 auto; min-height: 44px; padding: 8px 10px; }
+  .row { padding: 10px; }
+  .actions .btn { flex: 1 1 100%; min-height: 48px; }
+  .actions .hint { flex: 1 1 100%; }
+  .grade .n { font-size: 2.8rem; }
+  .mini { width: 56px; }
+  th, td { padding: 7px 4px; }
+}
 </style>
 
 <div class="wrap">
@@ -168,7 +192,7 @@ button:focus-visible, .chip:focus-visible, input:focus-visible { outline: 2px so
     <p class="topic-hint" id="topicHint">Toate subiectele. Alege unul sau mai multe numere pentru a te concentra doar pe ele.</p>
   </section>
 
-  <div>
+  <div class="statusbar">
     <div class="status"><span id="posTxt"></span><span id="scoreTxt"></span></div>
     <div class="bar" aria-hidden="true"><i id="barFill"></i></div>
   </div>
@@ -816,8 +840,13 @@ function feedback(slot, it, correct, opts = {}) {
     h("p", { class: "idea" }, h("span", { class: "lbl" }, "Ideea de bază"), it.idea)
   );
   const next = h("button", { class: "btn", id: "nextBtn", onclick: () => { S.pos++; S.cur = null; render(); window.scrollTo({ top: 0, behavior: "smooth" }); } }, isLast ? "Vezi rezultatul" : "Următorul item →");
-  slot.append(box, h("div", { class: "actions", style: "margin-top:14px" }, next, h("span", { class: "hint" }, "sau apasă Enter")));
+  slot.append(box, h("div", { class: "actions", style: "margin-top:14px" }, next, h("span", { class: "hint kbd" }, "sau apasă Enter")));
   next.focus({ preventScroll: true });
+  // On a phone the feedback lands below the fold; bring it into view.
+  if (matchMedia("(max-width: 640px)").matches) {
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    box.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+  }
 }
 
 function renderMC(it, body, card, fb) {
@@ -829,7 +858,7 @@ function renderMC(it, body, card, fb) {
       h("span", { class: "k" }, LETTERS[pos]), h("span", null, opts[oi]));
     btns.push(b); body.append(b);
   });
-  card.append(h("p", { class: "hint", style: "margin:0" }, `Tastele 1–${opts.length} aleg o variantă.`));
+  card.append(h("p", { class: "hint kbd", style: "margin:0" }, `Tastele 1–${opts.length} aleg o variantă.`));
   function choose(oi) {
     if (S.cur.answered) return;
     const ok = oi === it.ans;

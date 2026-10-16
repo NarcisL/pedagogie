@@ -1,0 +1,414 @@
+<title>Psihopedagogie pe drum</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;700;800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: same squared-notebook family as the quiz; a reading column with a fixed player docked at the bottom like a car-radio strip. */
+:root {
+  --paper: #F2F4F8;
+  --grid: #DFE5EF;
+  --card: #FFFFFF;
+  --ink: #18202B;
+  --muted: #586374;
+  --line: #D2D9E4;
+  --pen: #2A43B0;
+  --pen-soft: #E4E9FA;
+  --mark: #FFF0B8;
+  --key-bg: #EAF5EE;
+  --key-ink: #1D6A44;
+  --warn-soft: #FFF3D6;
+  --warn: #8A5A00;
+  --f-display: "Bitter", Georgia, "Times New Roman", serif;
+  --f-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #11161E; --grid: #19202B; --card: #18202B; --ink: #E5EAF1; --muted: #9AA5B5;
+    --line: #2A3442; --pen: #93A8FF; --pen-soft: #1E2849; --mark: #4A3F12;
+    --key-bg: #142C1F; --key-ink: #7FD8A6; --warn-soft: #33290F; --warn: #F2C56B; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #11161E; --grid: #19202B; --card: #18202B; --ink: #E5EAF1; --muted: #9AA5B5;
+  --line: #2A3442; --pen: #93A8FF; --pen-soft: #1E2849; --mark: #4A3F12;
+  --key-bg: #142C1F; --key-ink: #7FD8A6; --warn-soft: #33290F; --warn: #F2C56B; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background-color: var(--paper);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 22px 22px;
+  color: var(--ink); font-family: var(--f-body); font-size: 17px; line-height: 1.6;
+}
+.wrap {
+  max-width: 720px; margin: 0 auto;
+  padding-block: 28px 190px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 20px;
+}
+.mono { font-family: var(--f-mono); font-size: 0.74rem; letter-spacing: 0.06em; text-transform: uppercase; }
+header { display: flex; flex-direction: column; gap: 6px; }
+h1 { font-family: var(--f-display); font-weight: 800; font-size: clamp(1.7rem, 5vw, 2.3rem); line-height: 1.1; margin: 0; text-wrap: balance; }
+.sub { margin: 0; color: var(--muted); }
+.note { background: var(--warn-soft); color: var(--warn); border-radius: 8px; padding: 10px 14px; font-size: 0.92rem; margin: 0; }
+.note b { font-weight: 700; }
+
+.toc { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+.toc::-webkit-scrollbar { display: none; }
+.toc button { flex: 0 0 auto; font-family: var(--f-mono); font-size: 0.85rem; min-width: 44px; min-height: 42px; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; }
+.toc button.on { background: var(--pen); border-color: var(--pen); color: var(--card); }
+
+section.lesson { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px 20px 18px; display: flex; flex-direction: column; gap: 10px; scroll-margin-top: 16px; }
+.lhead { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.lhead > div { min-width: 0; }
+h2 { font-family: var(--f-display); font-weight: 700; font-size: 1.28rem; line-height: 1.25; margin: 2px 0 0; text-wrap: balance; }
+.from { flex: 0 0 auto; font: inherit; font-size: 0.88rem; font-weight: 600; color: var(--pen); background: var(--pen-soft); border: 0; border-radius: 999px; padding: 8px 14px; cursor: pointer; min-height: 40px; }
+section.lesson p { margin: 0; max-width: 65ch; }
+p.key { background: var(--key-bg); color: var(--key-ink); border-radius: 8px; padding: 10px 12px; font-weight: 600; }
+.s { cursor: pointer; border-radius: 3px; transition: background-color .2s; }
+.s:hover { background: var(--pen-soft); }
+.s.now { background: var(--mark); box-shadow: 0 0 0 2px var(--mark); }
+h2.now { background: var(--mark); box-shadow: 0 0 0 3px var(--mark); border-radius: 3px; }
+
+.player {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  background: var(--card); border-top: 1px solid var(--line);
+  box-shadow: 0 -10px 30px -20px rgba(20,30,60,.45);
+  padding-top: 10px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.pin { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; }
+.now-title { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; font-size: 0.9rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.now-title b { color: var(--ink); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.now-title span:last-child { flex: 0 0 auto; }
+.bar { height: 5px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--pen); }
+.ctrls { display: flex; align-items: center; justify-content: center; gap: 10px; }
+.cb { font: inherit; font-size: 0.95rem; font-weight: 600; min-width: 52px; min-height: 52px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; display: inline-grid; place-items: center; padding: 0 12px; }
+.cb.play { min-width: 68px; min-height: 68px; background: var(--pen); border-color: var(--pen); color: var(--card); font-size: 1.5rem; }
+.cb:disabled { opacity: .4; cursor: not-allowed; }
+.opts { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 0.86rem; color: var(--muted); }
+.opts label { display: inline-flex; align-items: center; gap: 6px; }
+select { font: inherit; font-size: 0.88rem; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; }
+input[type="checkbox"] { accent-color: var(--pen); width: 16px; height: 16px; }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--pen); outline-offset: 2px; }
+@media (max-width: 640px) {
+  body { font-size: 16.5px; }
+  .wrap { padding-block: 18px 200px; gap: 16px; }
+  section.lesson { padding: 16px 14px; }
+  .lhead { flex-direction: column; gap: 8px; }
+  .from { align-self: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) { .s { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="mono" style="color:var(--pen)">Recapitulare audio · 11 subiecte</span>
+    <h1>Psihopedagogie pe drum</h1>
+    <p class="sub" id="sub">Toate cele 11 subiecte, scrise pentru ascultare, cu exemple din ora de programare. Apasă ▶ și telefonul ți le citește.</p>
+  </header>
+  <p class="note" id="voiceNote" hidden></p>
+  <nav class="toc" id="toc" aria-label="Subiecte"></nav>
+  <div id="lessons"></div>
+</div>
+
+<div class="player" role="region" aria-label="Player">
+  <div class="pin">
+    <div class="now-title"><b id="nowTitle">Început</b><span id="nowTime"></span></div>
+    <div class="bar" aria-hidden="true"><i id="barFill"></i></div>
+    <div class="ctrls">
+      <button class="cb" id="prevSec" aria-label="Subiectul anterior">⏮</button>
+      <button class="cb" id="back" aria-label="Propoziția anterioară">↺</button>
+      <button class="cb play" id="play" aria-label="Pornește">▶</button>
+      <button class="cb" id="fwd" aria-label="Propoziția următoare">↻</button>
+      <button class="cb" id="nextSec" aria-label="Subiectul următor">⏭</button>
+    </div>
+    <div class="opts">
+      <label for="rate">Viteză
+        <select id="rate">
+          <option value="0.8">0,8×</option><option value="0.9">0,9×</option><option value="1" selected>1×</option>
+          <option value="1.1">1,1×</option><option value="1.25">1,25×</option><option value="1.5">1,5×</option>
+        </select>
+      </label>
+      <label for="follow"><input type="checkbox" id="follow" checked> Urmărește textul</label>
+    </div>
+  </div>
+</div>
+
+<script>
+const SECTIONS = [
+  { title: "Pe scurt", intro: true, paras: [
+    "Recapitulare la psihopedagogie. Trecem prin toate cele unsprezece subiecte, pe rând. La fiecare auzi ideile principale, iar la final ce trebuie să reții."
+  ]},
+  { n: 1, title: "Direcțiile de dezvoltare a pedagogiei contemporane", paras: [
+    "Pedagogia contemporană este o pedagogie interactivă, centrată pe elev și pe formarea competențelor. Are opt direcții de dezvoltare. Pentru fiecare, reține și soluția practică.",
+    "Prima direcție este reconsiderarea rolului elevului. Elevul devine subiect activ al educației, nu simplu receptor de informație. Soluții: activități de investigare, proiecte, studii de caz, dezbateri, experimente și sarcini în care elevul alege și își asumă responsabilitatea.",
+    "A doua este centrarea pe procesul învățării și pe competențe. Accentul trece de la memorarea informațiilor la capacitatea de a le înțelege și de a le folosi. Soluții: obiective formulate ca comportamente observabile, evaluare prin sarcini practice, portofolii și proiecte. La programare, elevul nu recită definiția unei funcții, ci scrie una care rezolvă o problemă.",
+    "A treia este învățarea prin rezolvarea de probleme și stimularea gândirii critice. Elevii analizează situații, compară soluții și formulează concluzii argumentate. La programare, depanarea unui program este exemplul perfect. Găsești cauza erorii, compari variante de corectare și argumentezi alegerea.",
+    "A patra este valorificarea experiențelor interactive. Învățarea în profunzime vine din cooperare, din confruntarea opiniilor și din raportarea la viață. Soluții: lucrul în echipă, învățarea prin cooperare, jocul de rol, dezbaterea și învățarea între colegi. Atenție, interactiv înseamnă cooperare, nu competiție. Lucrul în perechi la cod și revizuirea codului între colegi sunt exemple bune.",
+    "A cincea este utilizarea tehnologiilor informatizate. Tehnologia se folosește la proiectarea predării, la dirijarea învățării și la monitorizarea rezultatelor. Soluții: prezentări interactive, simulări, platforme educaționale, chestionare online și prelucrarea digitală a datelor.",
+    "A șasea este personalizarea și individualizarea instruirii. Se respectă ritmurile, stilurile de învățare și particularitățile fiecărui elev. Soluții: sarcini diferențiate, resurse variate, alegerea temei proiectului, sprijin suplimentar și evaluarea progresului elevului în raport cu propriul potențial. Atenție la capcană. Personalizarea nu înseamnă să-i aduci pe toți la același nivel. Înseamnă să compari fiecare elev cu el însuși.",
+    "A șaptea este reconstrucția spațiului școlar. Mediul de învățare trebuie să favorizeze interacțiunea, cooperarea și ascultarea activă. Soluții: organizarea flexibilă a clasei, activități pe grupe, laboratoare, ieșiri pe teren și folosirea comunității locale ca mediu educațional.",
+    "A opta este educația permanentă și orientarea spre viitor. Educația nu se încheie odată cu școala, ci continuă toată viața. Soluții: formarea autonomiei în învățare, a capacității de documentare și a disponibilității de a-ți actualiza mereu competențele. La programare, elevul învață să citească documentația și să se adapteze la versiunile noi.",
+    "De reținut. Opt direcții: elevul activ, competențele, problemele și gândirea critică, interacțiunea, tehnologia, personalizarea, spațiul școlar și educația permanentă."
+  ]},
+  { n: 2, title: "Practicile educaționale clasice și moderne", paras: [
+    "Comparăm paradigma clasică și paradigma modernă, criteriu cu criteriu.",
+    "Centrul activității. În paradigma clasică, profesorul și materia de studiu. În cea modernă, elevul și procesul învățării.",
+    "Rolul profesorului. Clasic, transmite informații, controlează și evaluează. Modern, organizează, facilitează, sprijină și oferă feedback.",
+    "Rolul elevului. Clasic, ascultă, memorează și reproduce. Modern, cercetează, cooperează, descoperă și rezolvă probleme.",
+    "Concepția despre învățare. Clasic, învățarea este privită ca produs. Modern, învățarea este privită ca proces.",
+    "Conținuturile. Clasic, predomină cunoștințele teoretice și abstracte. Modern, cunoștințele se îmbină cu experiențe și aplicații.",
+    "Metodele. Clasic, expunerea, explicația și exercițiul repetitiv. Modern, proiectul, problematizarea, experimentul, studiul de caz și dezbaterea.",
+    "Organizarea clasei. Clasic, activitate frontală și structură rigidă. Modern, activități frontale, individuale și pe grupe, într-o structură flexibilă.",
+    "Ritmul învățării. Clasic, același ritm pentru toți elevii. Modern, adaptare la ritmurile și particularitățile elevilor.",
+    "Comunicarea. Clasic, un flux unidirecțional, de la profesor la elev. Modern, un flux bidirecțional și reciprocitate a învățării.",
+    "Evaluarea. Clasic, accent pe reproducerea informației și pe rezultate. Modern, accent pe progres, competențe, aplicare și autoreglare.",
+    "Raportarea la elev. Clasic, norme exterioare și etichetări. Modern, valorizarea persoanei și raportarea la potențialul propriu.",
+    "Finalitatea. Clasic, formarea unui minim de aptitudini necesare prezentului. Modern, dezvoltare personală, competențe și pregătire pentru viitor.",
+    "Un exemplu la programare. Într-o lecție clasică despre sortare, profesorul prezintă algoritmul, iar elevii îl memorează și îl reproduc la test. Lecția modernă pornește de la o problemă reală, de exemplu ordonarea unui clasament. Elevii lucrează în echipă, testează și compară soluții.",
+    "Ideea finală, foarte importantă. Cele două paradigme nu trebuie opuse absolut. Explicația profesorului rămâne utilă pentru structurarea cunoștințelor, dar trebuie completată prin metode interactive și activități practice.",
+    "De reținut. Clasic înseamnă profesorul și produsul. Modern înseamnă elevul și procesul. Iar cele două se completează."
+  ]},
+  { n: 3, title: "Perspective asupra fenomenului educațional", paras: [
+    "Fenomenul educațional poate fi privit din cinci perspective.",
+    "Prima, educația ca proces. Educația este acțiunea de transformare a ființei umane pe termen lung, în perspectiva unor finalități. Transformarea se produce treptat și vizează trei dimensiuni: cognitivă, afectiv-motivațională și comportamentală. Nu este o intervenție punctuală, ci presupune continuitate și acumulări progresive.",
+    "A doua, educația ca acțiune de conducere. Înseamnă dirijarea evoluției individului spre stadiul de persoană autonomă și responsabilă. Conducerea nu înseamnă autoritate excesivă, ci orientare conștientă spre finalități. Profesorul organizează situațiile de învățare, monitorizează progresul și îl ajută pe elev să devină capabil de autodirijare.",
+    "A treia, educația ca acțiune socială. Este o activitate planificată, realizată pe baza unui proiect social. Societatea stabilește valorile, finalitățile și modelele de personalitate de care are nevoie acum și în viitor. Prin educație se transmite experiența socială între generații și se pregătește integrarea individului în comunitate.",
+    "A patra, educația ca interrelație umană. Presupune efortul comun al educatorului și al educatului. Rezultatele apar prin comunicare, cooperare și influență reciprocă. Elevul nu este un obiect pasiv. El interpretează mesajele, reacționează, oferă feedback și participă la propria formare.",
+    "A cincea, educația ca ansamblu de influențe. Cuprinde acțiuni și influențe sistematice sau spontane, intenționate ori neintenționate, care formează personalitatea. Ele vin din școală, din familie, din grupul de prieteni, din instituțiile culturale, din mass-media și din mediul social. Această perspectivă include educația formală, nonformală și informală.",
+    "De reținut. Cinci perspective: proces, acțiune de conducere, acțiune socială, interrelație umană și ansamblu de influențe."
+  ]},
+  { n: 4, title: "Dimensiunea socială și dimensiunea individuală ale scopului educației", paras: [
+    "Scopul educației are două dimensiuni.",
+    "Dimensiunea socială este importantă pentru că educația pregătește persoana pentru integrarea în comunitate, pentru asumarea rolurilor sociale și profesionale și pentru respectarea valorilor și normelor colective. Societatea are nevoie de oameni competenți, responsabili și capabili să contribuie la dezvoltarea ei.",
+    "Dimensiunea individuală este importantă pentru că fiecare persoană are particularități, aptitudini, interese, nevoi și un ritm propriu de dezvoltare. Educația trebuie să valorifice potențialul individual, să formeze autonomia și să sprijine realizarea personală.",
+    "Cele două dimensiuni sunt interdependente. Dacă neglijezi dimensiunea socială, formarea se rupe de nevoile comunității. Dacă neglijezi dimensiunea individuală, educația devine un proces uniformizator.",
+    "Urmează definiția proprie, pe care e bine s-o știi aproape pe de rost. Acțiunea educațională este o activitate socială conștientă, sistematică și orientată spre finalități, realizată prin cooperarea dintre educator și educabil, în vederea dezvoltării personalității acestuia potrivit particularităților sale individuale și cerințelor prezente și viitoare ale societății.",
+    "Încă o dată, pe bucăți. Activitate socială, conștientă, sistematică, orientată spre finalități. Realizată prin cooperarea dintre educator și educabil. Pentru dezvoltarea personalității. Potrivit particularităților individuale și cerințelor societății.",
+    "De reținut. Dimensiunea socială și cea individuală sunt interdependente, și amândouă apar în definiție."
+  ]},
+  { n: 5, title: "Educația ca fenomen social: cele patru funcții", paras: [
+    "Educația este un fenomen social pentru că asigură continuitatea experienței umane, integrarea persoanei în comunitate și dezvoltarea societății. Are patru funcții.",
+    "Funcția cognitivă înseamnă selectarea, prelucrarea și transmiterea organizată a cunoașterii de la societate la individ. Dar nu înseamnă doar acumulare de informații. Ea dezvoltă și capacitățile cognitive, deprinderile de muncă intelectuală și stilul de învățare.",
+    "Funcția culturală contribuie la conservarea, transmiterea și dezvoltarea valorilor culturale naționale și universale. Educația formează oameni capabili să cunoască, să înțeleagă și să evalueze cultura, dar și să participe la crearea ei.",
+    "Funcția de socializare asigură transmiterea și asimilarea valorilor, atitudinilor și modelelor de comportament ale unei comunități. Prin educație, individul învață să coopereze, să respecte reguli și să participe responsabil la viața socială.",
+    "Funcția economică exprimă contribuția educației la dezvoltarea socioeconomică. Efectele directe apar prin pregătirea și calificarea forței de muncă. Efectele indirecte constau în formarea unor capacități, atitudini și comportamente care influențează calitatea activității profesionale.",
+    "Prin aceste funcții, educația transmite patrimoniul social și formează oameni capabili să-l dezvolte.",
+    "De reținut. Patru funcții: cognitivă, culturală, de socializare și economică. La funcția economică, efecte directe și efecte indirecte."
+  ]},
+  { n: 6, title: "Educația formală, nonformală și informală", paras: [
+    "Educația are trei forme: formală, nonformală și informală.",
+    "Educația formală este conștientă, sistematică, organizată în instituții școlare și reglementată prin documente oficiale. Este ora din orar, ținută după programă.",
+    "Educația nonformală se desfășoară într-un cadru instituționalizat, dar în afara procesului școlar propriu-zis. Este mai flexibilă, variată și facultativă. De exemplu, un club de robotică sau un atelier de programare.",
+    "Educația informală cuprinde influențele spontane și neorganizate, intenționate sau neintenționate, ale familiei, grupului social, mass-mediei și mediului de viață.",
+    "Acum, relațiile dintre ele, două câte două.",
+    "Formală și nonformală. Educația nonformală completează și extinde educația formală. Ce înveți la oră aplici într-un club, într-un concurs sau într-un atelier.",
+    "Formală și informală. Experiențele informale pot ușura învățarea școlară, pentru că aduc exemple și experiențe concrete. Dar pot transmite și informații greșite sau valori incompatibile cu obiectivele școlii. De aceea școala valorifică experiențele utile și dezvoltă gândirea critică necesară evaluării influențelor informale. De exemplu, un sfat greșit găsit pe internet poate fi analizat critic la oră.",
+    "Nonformală și informală. Educația nonformală organizează pedagogic interese formate inițial în mediul informal. Un elev pasionat de jocuri se înscrie la un atelier de dezvoltare de jocuri. Și invers, competențele dintr-un proiect, un club sau un atelier trec în viața de zi cu zi și produc noi experiențe informale.",
+    "Schema, pe scurt. Educația formală este sistematică și obligatorie. Cea nonformală, flexibilă și organizată, o completează și o aplică. Față de cea informală, spontană și continuă, școala valorifică și verifică. Toate trei duc spre formarea personalității și dezvoltarea competențelor.",
+    "De reținut. Cele trei forme sunt necesare, se completează reciproc, iar efectele fiecăreia se repercutează asupra celorlalte."
+  ]},
+  { n: 7, title: "Obiective operaționale după procedura lui Mager", paras: [
+    "Procedura lui Mager presupune trei precizări. Comportamentul final, adică ce face elevul, în mod observabil. Condițiile de realizare, adică în ce context și cu ce resurse. Și criteriul minim de reușită, adică de la ce nivel spunem că a reușit.",
+    "Un obiectiv bine formulat are patru calități. Este centrat pe activitatea elevului, nu a profesorului. Folosește verbe observabile și măsurabile. Vizează o singură operație principală. Și include condiția și criteriul de evaluare.",
+    "Câteva exemple din programare. Primul. Având la dispoziție un tablou de zece numere întregi, elevii să scrie un program care îl sortează crescător, obținând rezultatul corect pentru minimum patru din cinci seturi de date de test. Condiția este tabloul de zece numere. Comportamentul este scrierea programului de sortare. Criteriul este minimum patru teste din cinci.",
+    "Al doilea. Fiind dat un program cu erori de logică, elevii să identifice minimum trei erori, în maximum zece minute. Aici criteriul combină o cantitate și un timp.",
+    "Al treilea. Lucrând în perechi și având la dispoziție specificația, elevii să implementeze o funcție de căutare care trece minimum opt din zece teste.",
+    "Al patrulea. Pe baza unei fișe cu șase secvențe de cod, elevii să precizeze ce afișează fiecare, răspunzând corect la minimum cinci din șase.",
+    "Al cincilea. Lucrând în echipe și având la dispoziție informațiile din lecție, elevii să elaboreze planul unei aplicații, care să cuprindă minimum patru funcționalități și două modalități de testare.",
+    "Ce este greșit. Verbe precum să înțeleagă, să cunoască sau să știe nu sunt observabile. Un obiectiv de tipul profesorul să prezinte este centrat pe profesor. Iar un obiectiv care cere să cunoască, să analizeze și să implementeze deodată are prea multe operații.",
+    "De reținut. Comportament, condiție, criteriu. La examen, aplici aceeași structură pe specialitatea cerută."
+  ]},
+  { n: 8, title: "Nivelurile integrării curriculare: exemple", paras: [
+    "Integrarea curriculară are patru niveluri, de la cel mai restrâns la cel mai larg.",
+    "Intradisciplinaritatea presupune relaționarea unor conținuturi din cadrul aceleiași discipline. Exemplu la informatică: tema sortării tablourilor leagă conținuturi studiate înainte, adică tablourile, structurile repetitive și funcțiile. Conținuturile sunt armonizate pentru rezolvarea unei probleme.",
+    "Multidisciplinaritatea, numită și pluridisciplinaritate, abordează o temă din perspectiva mai multor discipline, care își păstrează autonomia. Exemplu: tema inteligenței artificiale. La informatică se studiază algoritmii, la matematică statistica, iar la educație civică etica și responsabilitatea. Fiecare disciplină contribuie distinct, separat.",
+    "Interdisciplinaritatea presupune intersectarea efectivă a disciplinelor pentru investigarea unei probleme comune și formarea unor competențe integrate. Exemplu: o simulare a mișcării planetelor, în care elevii folosesc legile fizicii, ecuațiile din matematică și programarea. Produsul final este unul singur, comun.",
+    "Transdisciplinaritatea pornește de la o problemă reală și depășește limitele disciplinelor, punând în centru demersurile elevului. Exemplu: elevii observă o problemă a școlii, aplică un chestionar, analizează datele și costurile, discută cu membrii comunității și construiesc o aplicație care o rezolvă. Sunt mobilizate integrat competențe cognitive, sociale, civice, digitale și practice.",
+    "Diferența cheie dintre multi și inter. La multidisciplinaritate, disciplinele stau una lângă alta. La interdisciplinaritate, ele se intersectează și dau un rezultat comun.",
+    "De reținut. Intra, o singură disciplină. Multi, mai multe discipline, separat. Inter, mai multe discipline, împreună. Trans, problema reală și elevul în centru."
+  ]},
+  { n: 9, title: "Avantajele și dezavantajele nivelurilor integrării", paras: [
+    "Pentru fiecare nivel, avantaje și dezavantaje.",
+    "Intradisciplinaritatea. Avantaje: este compatibilă cu organizarea pe discipline, clase și lecții, asigură rigoare și progres logic, valorifică achizițiile anterioare, clarifică și aprofundează conținuturile. Dezavantaje: transferul între discipline este limitat, compartimentarea nu corespunde evoluției actuale a științei, iar relevanța pentru viață poate rămâne insuficient evidențiată.",
+    "Multidisciplinaritatea. Avantaje: limitează compartimentarea cunoașterii, apropie învățarea de realitate, oferă o perspectivă mai largă și favorizează transferul și motivația. Dezavantaje: disciplinele pot rămâne doar juxtapuse și există riscul superficialității și al lipsei de profunzime.",
+    "Interdisciplinaritatea. Avantaje: intersectează domeniile cunoașterii, facilitează folosirea principiilor generale în contexte diverse, stimulează colaborarea și rezolvarea problemelor și produce o învățare durabilă. Dezavantaje: necesită coordonare și o bază disciplinară solidă, poate produce o învățare superficială, iar viziunea globală poate limita organizarea cunoștințelor necesare specializării.",
+    "Transdisciplinaritatea. Avantaje: decompartimentează obiectele de studiu, se centrează pe viața reală, pe nevoile și interesele elevului, îi responsabilizează pe elevi, valorifică experiențele cotidiene și permite proiecte integrate. Dezavantaje: libertatea față de discipline poate diminua rigoarea și există riscul nesprijinirii pe cunoștințe anterioare și al tratării superficiale a unor conținuturi.",
+    "Regula generală. Cu cât integrarea e mai mare, cu atât câștigi relevanță și motivație, dar riști să pierzi din rigoare și profunzime.",
+    "De reținut. Niciun nivel nu este suficient în toate situațiile. Intradisciplinaritatea asigură fundamentele, iar nivelurile superioare facilitează transferul și aplicarea lor în probleme complexe."
+  ]},
+  { n: 10, title: "Abordarea disciplinară și abordarea integrată", paras: [
+    "Comparăm abordarea disciplinară și abordarea integrată a conținuturilor, pe criterii.",
+    "Organizarea. Disciplinar, conținuturile sunt organizate în discipline distincte. Integrat, în jurul unor teme, probleme, concepte sau proiecte.",
+    "Cunoașterea. Abordarea disciplinară asigură structură, succesiune și profunzime într-un domeniu. Cea integrată stabilește relații între cunoștințe, capacități și valori din domenii diferite.",
+    "Specializarea. Abordarea disciplinară este corelată cu pregătirea de specialitate a profesorilor. Cea integrată necesită colaborare și coordonare între profesori.",
+    "Achizițiile anterioare. Disciplinar, construiești sistematic pe ce știi deja. Integrat, poți neglija bazele disciplinare dacă proiectezi superficial.",
+    "Transferul. Disciplinar, transferul spre alte discipline și situații nu se produce automat. Integrat, transferul în situații noi este favorizat.",
+    "Raportarea la viață. Disciplinar, relevanța practică poate rămâne insuficient evidențiată. Integrat, experiențele de învățare sunt corelate cu viața cotidiană și profesională.",
+    "Motivația. Disciplinar, poate scădea dacă informația este abstractă și izolată. Integrat, crește prin probleme autentice și raportare la interesele elevilor.",
+    "Competențele. Abordarea disciplinară formează competențe specifice disciplinei. Cea integrată formează competențe integrate, cheie și transversale.",
+    "Riscurile. Disciplinar, fragmentarea cunoașterii și izolarea disciplinelor. Integrat, superficialitatea, lipsa de rigoare și diluarea specializării.",
+    "Pe scurt. Avantajele abordării disciplinare sunt rigoarea științifică, progresia logică, aprofundarea și compatibilitatea cu organizarea tradițională a învățământului. Dezavantajele sunt fragmentarea cunoașterii, transferul redus și legătura insuficientă cu viața reală.",
+    "Avantajele abordării integrate sunt perspectiva globală, flexibilitatea structurilor mentale, motivarea elevilor și capacitatea de a rezolva probleme profesionale, sociale și personale. Dezavantajele sunt dificultatea proiectării, necesitatea colaborării dintre profesori și riscul unei abordări superficiale.",
+    "De reținut. Cele două se folosesc complementar. Abordarea disciplinară construiește fundamentul conceptual, iar cea integrată facilitează relaționarea și aplicarea cunoștințelor."
+  ]},
+  { n: 11, title: "Curriculum nucleu și curriculum la decizia școlii", paras: [
+    "Curriculumul nucleu corespunde trunchiului comun obligatoriu. Cuprinde disciplinele obligatorii din fiecare arie curriculară, conținuturile obligatorii din programele școlare și numărul minim de ore pentru fiecare disciplină obligatorie. Reprezintă aproximativ 65 până la 70 la sută din Curriculumul Național. Asigură coerența și unitatea sistemului de învățământ, egalitatea șanselor și o bază comună de pregătire pentru toți elevii.",
+    "Curriculumul la decizia școlii reprezintă diferența dintre numărul maxim și cel minim de ore prevăzute în planul-cadru. Reprezintă aproximativ 30 până la 35 la sută din Curriculumul Național. Permite aprofundarea curriculumului nucleu, extinderea lui, introducerea unor discipline noi și abordarea unor teme integratoare, inter- sau transdisciplinare.",
+    "Are trei modalități de concretizare.",
+    "Curriculumul nucleu aprofundat aprofundează obiectivele și conținuturile obligatorii prin diversificarea activităților de predare și învățare. Se adresează mai ales elevilor cu dificultăți de învățare și se realizează în limita maximă a plajei orare.",
+    "Curriculumul extins adaugă obiective și unități de conținut noi și presupune parcurgerea inclusiv a segmentelor neobligatorii. Se adresează elevilor cu aptitudini și interes sporit pentru o disciplină.",
+    "Un truc de memorie. Aprofundat înseamnă mai adânc în același conținut, pentru elevii cu dificultăți. Extins înseamnă mai departe, cu conținut nou, pentru elevii pasionați.",
+    "Curriculumul elaborat în școală poate lua forma unor activități, module, proiecte sau discipline opționale care nu sunt incluse în programa obligatorie. Are obiective și conținuturi noi și apare ca rubrică distinctă în catalog. La informatică, de exemplu, un opțional de dezvoltare de aplicații mobile.",
+    "De ce contează în paradigma modernă? Curriculumul la decizia școlii concretizează șapte lucruri. Descentralizarea și flexibilizarea, pentru că școala își poate adapta oferta. Centrarea pe elev, prin raportarea la interese, aptitudini, nevoi și ritmuri de învățare. Individualizarea parcursurilor, prin aprofundare, extindere și opționale. Legătura cu viața și cu comunitatea, prin probleme locale. Interdisciplinaritatea și transdisciplinaritatea, prin teme și proiecte integrate. Formarea competențelor, prin activități practice și experiențe relevante. Și participarea comunității, pentru că oferta poate fi stabilită împreună cu elevii, părinții și reprezentanții comunității locale.",
+    "De reținut. Curriculumul nucleu garantează baza comună și egalitatea șanselor. Curriculumul la decizia școlii asigură flexibilitatea, diferențierea și adaptarea educației la elev și la contextul social."
+  ]},
+  { title: "Final", intro: true, paras: [
+    "Gata, asta a fost toată recapitularea. Când ajungi, fă o rundă din quiz pe subiectele la care nu te-ai simțit sigur."
+  ]}
+];
+
+// ---------- build text ----------
+const flat = []; // { t, si, el }
+const secStart = [];
+const lessonsEl = document.getElementById("lessons");
+const tocEl = document.getElementById("toc");
+const lessonsWrap = document.createElement("div");
+lessonsWrap.style.cssText = "display:flex;flex-direction:column;gap:16px";
+lessonsEl.append(lessonsWrap);
+
+function words(s) { return s.split(/\s+/).length; }
+SECTIONS.forEach((sec, si) => {
+  secStart[si] = flat.length;
+  const box = document.createElement("section");
+  box.className = "lesson"; box.id = "s" + si;
+  const head = document.createElement("div"); head.className = "lhead";
+  const hd = document.createElement("div");
+  const eyebrow = document.createElement("span"); eyebrow.className = "mono"; eyebrow.style.color = "var(--muted)";
+  const totalWords = sec.paras.reduce((a, p) => a + words(p), 0) + words(sec.title);
+  eyebrow.textContent = (sec.n ? `Subiectul ${sec.n} · ` : "") + `~${Math.max(1, Math.round(totalWords / 140))} min`;
+  const h2 = document.createElement("h2"); h2.textContent = sec.title;
+  hd.append(eyebrow, h2);
+  const from = document.createElement("button"); from.className = "from"; from.textContent = "▶ Ascultă de aici";
+  from.addEventListener("click", () => playFrom(secStart[si]));
+  head.append(hd, from);
+  box.append(head);
+  if (!sec.intro) flat.push({ t: `Subiectul ${sec.n}. ${sec.title}.`, si, el: h2 });
+  sec.paras.forEach(p => {
+    const para = document.createElement("p");
+    if (p.startsWith("De reținut")) para.className = "key";
+    p.split(/(?<=[.!?])\s+/).forEach((t, k) => {
+      const sp = document.createElement("span"); sp.className = "s"; sp.textContent = t;
+      const i = flat.length; sp.dataset.i = i;
+      sp.addEventListener("click", () => playFrom(i));
+      flat.push({ t, si, el: sp });
+      para.append(sp, " ");
+    });
+    box.append(para);
+  });
+  lessonsWrap.append(box);
+  if (sec.n) {
+    const b = document.createElement("button"); b.textContent = String(sec.n);
+    b.setAttribute("aria-label", `Subiectul ${sec.n}: ${sec.title}`);
+    b.addEventListener("click", () => { document.getElementById("s" + si).scrollIntoView({ behavior: motionOK() ? "smooth" : "auto", block: "start" }); });
+    sec.tocBtn = b; tocEl.append(b);
+  }
+});
+const totalWordsAll = flat.reduce((a, f) => a + words(f.t), 0);
+const wordsBefore = []; flat.reduce((a, f, i) => (wordsBefore[i] = a, a + words(f.t)), 0);
+
+// ---------- speech ----------
+const synth = window.speechSynthesis;
+let voice = null, idx = 0, playing = false, curU = null, rate = 1, wakeLock = null;
+const $ = (id) => document.getElementById(id);
+function motionOK() { return !matchMedia("(prefers-reduced-motion: reduce)").matches; }
+
+function pickVoice() {
+  if (!synth) return;
+  const vs = synth.getVoices();
+  if (!vs.length) return;
+  voice = vs.find(v => /^ro(-|_|$)/i.test(v.lang) && v.localService) || vs.find(v => /^ro/i.test(v.lang)) || null;
+  const note = $("voiceNote");
+  if (!voice) {
+    note.hidden = false;
+    note.innerHTML = "<b>Nu am găsit o voce în limba română pe acest dispozitiv.</b> Textul va fi citit cu vocea implicită și poate suna ciudat. Pe Android: Setări › Accesibilitate › Ieșire text-în-vorbire, apoi descarcă limba română. Pe iPhone: Setări › Accesibilitate › Conținut vorbit › Voci › Română.";
+  } else note.hidden = true;
+}
+if (synth) { pickVoice(); synth.addEventListener?.("voiceschanged", pickVoice); }
+else {
+  const note = $("voiceNote"); note.hidden = false;
+  note.innerHTML = "<b>Acest browser nu poate citi textul cu voce tare.</b> Deschide pagina în Chrome sau Safari, sau folosește funcția telefonului de citire a ecranului.";
+  ["play", "back", "fwd", "prevSec", "nextSec"].forEach(id => $(id).disabled = true);
+}
+
+function speakCur() {
+  if (!playing) return;
+  if (idx >= flat.length) { stop(); idx = 0; highlight(); return; }
+  const u = new SpeechSynthesisUtterance(flat[idx].t);
+  u.lang = "ro-RO"; if (voice) u.voice = voice; u.rate = rate;
+  u.onend = () => { if (u !== curU || !playing) return; idx++; save(); highlight(); speakCur(); };
+  u.onerror = (e) => { if (u !== curU || !playing) return; if (e.error === "interrupted" || e.error === "canceled") return; idx++; speakCur(); };
+  curU = u;
+  synth.speak(u);
+  highlight();
+}
+function playFrom(i) {
+  if (!synth) return;
+  idx = Math.max(0, Math.min(i, flat.length - 1));
+  curU = null; synth.cancel();
+  playing = true; setPlayBtn(); grabWake();
+  setTimeout(speakCur, 80);
+}
+function stop() { playing = false; curU = null; if (synth) synth.cancel(); setPlayBtn(); releaseWake(); save(); }
+function setPlayBtn() { const b = $("play"); b.textContent = playing ? "❚❚" : "▶"; b.setAttribute("aria-label", playing ? "Pauză" : "Pornește"); }
+
+async function grabWake() { try { if (navigator.wakeLock && !wakeLock) { wakeLock = await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release", () => { wakeLock = null; }); } } catch (e) { wakeLock = null; } }
+function releaseWake() { try { wakeLock && wakeLock.release(); } catch (e) {} wakeLock = null; }
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && playing) grabWake(); });
+
+let lastEl = null;
+function highlight() {
+  const f = flat[Math.min(idx, flat.length - 1)];
+  if (lastEl) lastEl.classList.remove("now");
+  if (f) {
+    f.el.classList.add("now"); lastEl = f.el;
+    if (playing && $("follow").checked) f.el.scrollIntoView({ behavior: motionOK() ? "smooth" : "auto", block: "center" });
+    const sec = SECTIONS[f.si];
+    $("nowTitle").textContent = sec.n ? `${sec.n}. ${sec.title}` : sec.title;
+    const left = Math.max(0, Math.round((totalWordsAll - wordsBefore[idx]) / (140 * rate)));
+    $("nowTime").textContent = `~${left} min rămase`;
+    $("barFill").style.width = `${(wordsBefore[idx] / totalWordsAll) * 100}%`;
+    SECTIONS.forEach((s, k) => s.tocBtn && s.tocBtn.classList.toggle("on", k === f.si));
+  }
+}
+function save() { try { localStorage.setItem("ppd-idx", String(idx)); localStorage.setItem("ppd-rate", String(rate)); } catch (e) {} }
+
+$("play").addEventListener("click", () => playing ? stop() : playFrom(idx));
+$("back").addEventListener("click", () => { const i = Math.max(0, idx - 1); playing ? playFrom(i) : (idx = i, highlight(), save()); });
+$("fwd").addEventListener("click", () => { const i = Math.min(flat.length - 1, idx + 1); playing ? playFrom(i) : (idx = i, highlight(), save()); });
+function curSec() { return flat[Math.min(idx, flat.length - 1)].si; }
+$("prevSec").addEventListener("click", () => {
+  let si = curSec();
+  if (idx - secStart[si] < 3 && si > 0) si--; // near the start: jump to the previous lesson
+  playing ? playFrom(secStart[si]) : (idx = secStart[si], highlight(), save());
+});
+$("nextSec").addEventListener("click", () => {
+  const si = Math.min(SECTIONS.length - 1, curSec() + 1);
+  playing ? playFrom(secStart[si]) : (idx = secStart[si], highlight(), save());
+});
+$("rate").addEventListener("change", (e) => { rate = parseFloat(e.target.value); save(); if (playing) playFrom(idx); else highlight(); });
+
+try {
+  const r = parseFloat(localStorage.getItem("ppd-rate")); if (r) { rate = r; $("rate").value = String(r); }
+  const i = parseInt(localStorage.getItem("ppd-idx"), 10); if (i >= 0 && i < flat.length) idx = i;
+} catch (e) {}
+$("sub").textContent = `Toate cele 11 subiecte, scrise pentru ascultare, cu exemple din ora de programare. Cam ${Math.round(totalWordsAll / 140)} de minute la viteză normală. Apasă ▶ și telefonul ți le citește. Atinge orice propoziție ca să sari la ea.`;
+highlight();
+</script>

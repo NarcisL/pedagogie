@@ -1,0 +1,979 @@
+<title>Quiz Psihopedagogie</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;700;800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one narrow study column on squared school-notebook paper; blue-pen ink for actions, teacher's red pen for mistakes. */
+:root {
+  --paper: #F2F4F8;
+  --grid: #DFE5EF;
+  --card: #FFFFFF;
+  --ink: #18202B;
+  --muted: #586374;
+  --line: #D2D9E4;
+  --pen: #2A43B0;
+  --pen-soft: #E4E9FA;
+  --ok: #1D7549;
+  --ok-soft: #DDF1E5;
+  --bad: #BE342D;
+  --bad-soft: #FBE4E2;
+  --warn-soft: #FFF3D6;
+  --warn: #8A5A00;
+  --f-display: "Bitter", Georgia, "Times New Roman", serif;
+  --f-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #11161E; --grid: #19202B; --card: #18202B; --ink: #E5EAF1; --muted: #9AA5B5;
+    --line: #2A3442; --pen: #93A8FF; --pen-soft: #1E2849; --ok: #63CE93; --ok-soft: #142C1F;
+    --bad: #FF8F86; --bad-soft: #391B19; --warn-soft: #33290F; --warn: #F2C56B; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #11161E; --grid: #19202B; --card: #18202B; --ink: #E5EAF1; --muted: #9AA5B5;
+  --line: #2A3442; --pen: #93A8FF; --pen-soft: #1E2849; --ok: #63CE93; --ok-soft: #142C1F;
+  --bad: #FF8F86; --bad-soft: #391B19; --warn-soft: #33290F; --warn: #F2C56B; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 22px 22px;
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 17px;
+  line-height: 1.5;
+}
+.wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding-block: 28px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 18px;
+}
+header { display: flex; flex-direction: column; gap: 6px; }
+h1 { font-family: var(--f-display); font-weight: 800; font-size: clamp(1.7rem, 4.5vw, 2.3rem); line-height: 1.1; margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+.sub { color: var(--muted); margin: 0; font-size: 0.95rem; }
+.mono { font-family: var(--f-mono); font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; }
+
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.filters-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  font-family: var(--f-mono); font-size: 0.85rem; min-width: 40px; padding: 6px 10px;
+  border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 999px; cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--pen); border-color: var(--pen); color: var(--card); }
+.chip:hover { border-color: var(--pen); }
+.topic-hint { color: var(--muted); font-size: 0.88rem; min-height: 1.3em; margin: 0; }
+.toggle { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 0.9rem; cursor: pointer; }
+.toggle input { accent-color: var(--pen); width: 16px; height: 16px; }
+
+.status { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: 0.92rem; font-variant-numeric: tabular-nums; }
+.status b { color: var(--ink); }
+.bar { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--pen); width: 0; transition: width .25s ease; }
+
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 22px 20px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 1px 0 var(--line), 0 10px 30px -18px rgba(20,30,60,.35); }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; color: var(--muted); }
+.pill { font-family: var(--f-mono); font-size: 0.7rem; letter-spacing: 0.05em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; background: var(--pen-soft); color: var(--pen); }
+.pill.trap { background: var(--warn-soft); color: var(--warn); }
+.qtext { font-family: var(--f-display); font-weight: 500; font-size: 1.22rem; line-height: 1.4; margin: 0; text-wrap: pretty; }
+.instr { color: var(--muted); font-size: 0.92rem; margin: -6px 0 0; }
+
+.opts { display: flex; flex-direction: column; gap: 8px; }
+.opt {
+  text-align: left; font: inherit; color: var(--ink); background: var(--card);
+  border: 1.5px solid var(--line); border-radius: 8px; padding: 11px 14px; cursor: pointer;
+  display: grid; grid-template-columns: 26px 1fr; gap: 10px; align-items: start;
+}
+.opt .k { font-family: var(--f-mono); font-size: 0.8rem; color: var(--muted); padding-top: 2px; }
+.opt:hover:not(:disabled) { border-color: var(--pen); }
+.opt[aria-pressed="true"] { border-color: var(--pen); background: var(--pen-soft); }
+.opt:disabled { cursor: default; }
+.opt.is-ok { border-color: var(--ok); background: var(--ok-soft); }
+.opt.is-bad { border-color: var(--bad); background: var(--bad-soft); }
+.opt.is-missed { border-color: var(--ok); border-style: dashed; }
+
+.rows { display: flex; flex-direction: column; gap: 10px; }
+.row { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.row.is-ok { border-color: var(--ok); background: var(--ok-soft); }
+.row.is-bad { border-color: var(--bad); background: var(--bad-soft); }
+.row p { margin: 0; }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg button { font: inherit; font-size: 0.88rem; padding: 5px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--pen); color: var(--card); border-color: var(--pen); }
+.seg button:disabled { cursor: default; }
+.seg button.right { outline: 2px solid var(--ok); outline-offset: 1px; }
+.rowfix { font-size: 0.86rem; color: var(--bad); }
+
+textarea { width: 100%; min-height: 110px; font: inherit; font-size: 1rem; color: var(--ink); background: var(--paper); border: 1.5px solid var(--line); border-radius: 8px; padding: 10px 12px; resize: vertical; }
+textarea:focus { border-color: var(--pen); outline: none; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.btn { font: inherit; font-weight: 600; padding: 10px 18px; border-radius: 8px; border: 1.5px solid var(--pen); background: var(--pen); color: var(--card); cursor: pointer; }
+.btn.ghost { background: transparent; color: var(--pen); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.okb { background: var(--ok); border-color: var(--ok); }
+.btn.badb { background: var(--bad); border-color: var(--bad); }
+.btn.midb { background: transparent; color: var(--warn); border-color: var(--warn); }
+.hint { color: var(--muted); font-size: 0.85rem; }
+
+.fb { border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; border: 1px solid var(--line); background: var(--paper); }
+.fb h3 { margin: 0; font-family: var(--f-display); font-size: 1.1rem; }
+.fb.ok h3 { color: var(--ok); }
+.fb.bad h3 { color: var(--bad); }
+.fb p { margin: 0; }
+.fb .lbl { font-family: var(--f-mono); font-size: 0.7rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 2px; }
+.fb .idea { border-top: 1px dashed var(--line); padding-top: 8px; }
+.model { background: var(--pen-soft); border-radius: 8px; padding: 12px 14px; }
+.model p { margin: 0; }
+
+.end h2 { font-family: var(--f-display); font-size: 1.5rem; margin: 0; }
+.grade { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.grade .n { font-family: var(--f-display); font-weight: 800; font-size: 3.4rem; line-height: 1; color: var(--pen); font-variant-numeric: tabular-nums; }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.93rem; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+th { font-family: var(--f-mono); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 400; }
+td.num { text-align: right; white-space: nowrap; }
+.mini { width: 90px; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.mini > i { display: block; height: 100%; background: var(--ok); }
+.misslist { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; color: var(--muted); font-size: 0.92rem; }
+.misslist b { color: var(--ink); font-weight: 600; }
+
+button:focus-visible, .chip:focus-visible, input:focus-visible { outline: 2px solid var(--pen); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+@media (max-width: 480px) { .card { padding: 18px 14px; } .qtext { font-size: 1.1rem; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="mono" style="color:var(--pen)">Examen · Psihopedagogie</span>
+    <h1>Quiz Psihopedagogie</h1>
+    <p class="sub">Itemi pe toate cele 11 subiecte, cu exemple din ora de programare. Feedback-ul explică în engleză de ce un răspuns e corect.</p>
+  </header>
+
+  <section class="panel" aria-label="Filtru pe subiecte">
+    <div class="filters-head">
+      <span class="mono" style="color:var(--muted)">Subiectele de examen</span>
+      <label class="toggle" for="shuffle"><input type="checkbox" id="shuffle"> Ordine aleatorie</label>
+    </div>
+    <div class="chips" id="chips"></div>
+    <p class="topic-hint" id="topicHint">Toate subiectele. Alege unul sau mai multe numere pentru a te concentra doar pe ele.</p>
+  </section>
+
+  <div>
+    <div class="status"><span id="posTxt"></span><span id="scoreTxt"></span></div>
+    <div class="bar" aria-hidden="true"><i id="barFill"></i></div>
+  </div>
+
+  <main id="stage"></main>
+</div>
+
+<script>
+const TOPICS = {
+  1: "Direcțiile de dezvoltare a pedagogiei contemporane",
+  2: "Practici educaționale clasice și moderne",
+  3: "Perspective asupra fenomenului educațional",
+  4: "Dimensiunea socială și individuală a scopului educației",
+  5: "Funcțiile educației ca fenomen social",
+  6: "Educația formală, nonformală și informală",
+  7: "Obiective operaționale după Mager",
+  8: "Nivelurile integrării curriculare: exemple",
+  9: "Avantajele și dezavantajele nivelurilor integrării",
+  10: "Abordarea disciplinară și abordarea integrată",
+  11: "Curriculum nucleu și curriculum la decizia școlii"
+};
+
+const DIRECTIONS = [
+  "Reconsiderarea rolului elevului",
+  "Centrarea pe procesul învățării și pe competențe",
+  "Învățarea prin rezolvarea de probleme și stimularea gândirii critice",
+  "Valorificarea experiențelor interactive",
+  "Utilizarea tehnologiilor informatizate",
+  "Personalizarea și individualizarea instruirii",
+  "Reconstrucția spațiului școlar",
+  "Educația permanentă și orientarea spre viitor"
+];
+const FNI = ["Educație formală", "Educație nonformală", "Educație informală"];
+const LEVELS = ["Intradisciplinaritate", "Multidisciplinaritate", "Interdisciplinaritate", "Transdisciplinaritate"];
+const CDS_FORMS = ["Curriculum nucleu aprofundat", "Curriculum extins", "Curriculum elaborat în școală", "Curriculum nucleu (trunchi comun)"];
+
+// type: mc | tf | multi | sort | open.  trap: tests a common mistake.
+const ITEMS = [
+  // ───────── 1 ─────────
+  { q: 1, type: "mc", kind: "Scenariu", trap: true,
+    text: "La ora de programare, fiecare elev alege ce aplicație construiește (un joc, o listă de sarcini sau un quiz), primește fișe de dificultăți diferite și este evaluat după cât a progresat față de propriul punct de plecare. Ce direcție a pedagogiei contemporane ilustrează situația?",
+    opts: [DIRECTIONS[5], DIRECTIONS[4], DIRECTIONS[6], DIRECTIONS[2]], ans: 0,
+    why: "Differentiated tasks, choice of project topic and judging progress against the student's own potential are exactly the operational solutions listed for personalisation and individualisation.",
+    idea: "Personalizarea respectă ritmurile, stilurile și particularitățile fiecărui elev și evaluează progresul raportat la propriul potențial." },
+  { q: 1, type: "tf", kind: "Adevărat / Fals", trap: true,
+    text: "Personalizarea instruirii înseamnă că profesorul îi aduce pe toți elevii la același nivel de performanță, în același ritm.",
+    ans: 1,
+    why: "False. Personalisation is not about making everyone identical. Each student's progress is measured relative to their OWN potential, respecting their pace and learning style. 'Same pace for everyone' is actually a feature of the classic paradigm (Q2).",
+    idea: "Personalizare = evaluarea progresului fiecărui elev în raport cu propriul potențial, nu uniformizare." },
+  { q: 1, type: "mc", kind: "Greșeală frecventă", trap: true,
+    text: "Care activitate ilustrează cel mai bine direcția „valorificarea experiențelor interactive”?",
+    opts: [
+      "Un concurs individual de rezolvare rapidă a problemelor, cu clasament afișat pe tablă",
+      "Pair programming (un elev scrie codul, celălalt îl ghidează), urmat de code review între echipe și discutarea soluțiilor alternative",
+      "Profesorul prezintă soluția corectă, iar elevii o copiază în caiet",
+      "Fiecare elev rezolvă singur aceeași fișă de exerciții"
+    ], ans: 1,
+    why: "Interactive learning means cooperation, confronting opinions and peer learning. Pair programming and code reviews are the programming-class version of teamwork, cooperative learning and learning between colleagues. A ranking contest is competitive and individual, so it misses the point.",
+    idea: "Învățarea interactivă se bazează pe cooperare și învățare între colegi, nu pe competiție." },
+  { q: 1, type: "mc", kind: "Scenariu",
+    text: "Profesorul le dă elevilor un program care afișează rezultate greșite. Elevii trebuie să găsească cauza erorii, să compare două variante de corectare și să argumenteze care e mai bună. Ce direcție ilustrează?",
+    opts: [DIRECTIONS[0], DIRECTIONS[2], DIRECTIONS[7], DIRECTIONS[6]], ans: 1,
+    why: "Debugging is problem solving: students analyse a situation, identify causes and effects, compare solutions and draw argued conclusions. It is the programming equivalent of analysing a local pollution source and proposing interventions.",
+    idea: "Elevii analizează situații, compară soluții și formulează concluzii argumentate: gândire critică prin rezolvare de probleme." },
+  { q: 1, type: "mc", kind: "Scenariu",
+    text: "Elevii învață să citească documentația oficială a unui limbaj de programare și să-și actualizeze singuri cunoștințele când apare o versiune nouă. Ce direcție este concretizată?",
+    opts: [DIRECTIONS[4], DIRECTIONS[1], DIRECTIONS[7], DIRECTIONS[3]], ans: 2,
+    why: "Learning to document yourself and update your skills independently is the solution listed for lifelong education: education does not end with school. Using technology is present, but the goal here is autonomy in learning over time.",
+    idea: "Educația permanentă formează autonomia în învățare, capacitatea de documentare și disponibilitatea de actualizare a competențelor." },
+  { q: 1, type: "mc", kind: "Scenariu",
+    text: "În laboratorul de informatică, mesele sunt mutate în „insule” pentru echipe, există un colț pentru lucrul în perechi, iar clasa vizitează o firmă IT din oraș. Ce direcție este vizată?",
+    opts: [DIRECTIONS[6], DIRECTIONS[5], DIRECTIONS[4], DIRECTIONS[0]], ans: 0,
+    why: "Flexible room layout, group work, labs, field trips and using the local community as a learning environment are the solutions for rebuilding the school space so it favours interaction and cooperation.",
+    idea: "Spațiul de învățare trebuie să favorizeze interacțiunea, cooperarea și ascultarea activă." },
+
+  // ───────── 2 ─────────
+  { q: 2, type: "sort", kind: "Clasic sau modern?",
+    text: "Sortează fiecare practică: aparține paradigmei clasice sau celei moderne?",
+    cats: ["Clasică", "Modernă"],
+    rows: [
+      ["Profesorul dictează sintaxa buclei for, iar elevii o reproduc identic la test.", 0],
+      ["Elevii pornesc de la o problemă reală (o aplicație pentru biblioteca școlii) și o construiesc în echipe.", 1],
+      ["Toți elevii parcurg aceleași exerciții, în același ritm.", 0],
+      ["Profesorul organizează sarcinile, circulă printre echipe și oferă feedback.", 1],
+      ["Comunicarea merge într-un singur sens: profesorul vorbește, elevii ascultă.", 0],
+      ["Evaluarea urmărește progresul, aplicarea și autoreglarea (elevii își verifică singuri codul cu teste).", 1],
+      ["Elevii sunt etichetați „buni” sau „slabi” la programare după norme exterioare.", 0],
+      ["Lecția despre poluarea apei pornește de la un caz real, iar elevii analizează date și propun soluții.", 1]
+    ],
+    why: "Classic practice centres on the teacher and the subject: one-way communication, same pace, reproduction, external labels. Modern practice centres on the student and the learning process: real problems, teamwork, the teacher as facilitator, progress-based evaluation and self-regulation.",
+    idea: "Clasic: profesorul și materia în centru, învățarea ca produs. Modern: elevul și procesul învățării în centru." },
+  { q: 2, type: "tf", kind: "Adevărat / Fals", trap: true,
+    text: "Într-o lecție modernă despre algoritmii de sortare, profesorul nu ar trebui să mai explice nimic, deoarece explicația aparține paradigmei clasice.",
+    ans: 1,
+    why: "False. The two paradigms are complementary, not absolute opposites. The teacher's explanation is still useful for structuring knowledge (e.g. explaining how bubble sort works), but it should be completed by interactive methods and practice (e.g. students sort cards by hand, then implement and compare algorithms).",
+    idea: "Cele două paradigme nu trebuie opuse absolut: explicația rămâne utilă, dar e completată de metode interactive." },
+  { q: 2, type: "mc", kind: "Definiție",
+    text: "Cum este privită învățarea în paradigma clasică, respectiv în cea modernă?",
+    opts: ["Clasic: ca proces · Modern: ca produs", "Clasic: ca produs · Modern: ca proces", "În ambele: ca produs", "În ambele: ca proces"], ans: 1,
+    why: "The classic paradigm cares about the final result (what you can reproduce). The modern one cares about how learning happens, which is why it values feedback, progress and self-regulation along the way.",
+    idea: "Trecerea de la învățarea-produs la învățarea-proces este una dintre schimbările-cheie ale paradigmei moderne." },
+  { q: 2, type: "mc", kind: "Definiție",
+    text: "Care este finalitatea educației în paradigma clasică?",
+    opts: [
+      "Dezvoltarea personală, formarea competențelor și pregătirea pentru viitor",
+      "Formarea unui minim de aptitudini necesare prezentului",
+      "Valorizarea persoanei și raportarea la potențialul propriu",
+      "Adaptarea la ritmurile și particularitățile elevilor"
+    ], ans: 1,
+    why: "The classic aim is a minimum of skills needed for the present. The modern aim is broader: personal development, competences and readiness for the future. The other options are modern traits from other rows of the table.",
+    idea: "Clasic: minimum pentru prezent. Modern: dezvoltare personală și pregătire pentru viitor." },
+  { q: 2, type: "mc", kind: "Definiție",
+    text: "Care set de metode este caracteristic paradigmei moderne?",
+    opts: [
+      "Expunere, explicație, exercițiu repetitiv",
+      "Proiect, problematizare, experiment, studiu de caz, dezbatere",
+      "Dictare, memorare, reproducere",
+      "Activitate exclusiv frontală, structură rigidă"
+    ], ans: 1,
+    why: "Projects, problem-based learning, experiments, case studies and debates put the student in an active role. In a programming class: building a project, debugging challenges, comparing two algorithms experimentally.",
+    idea: "Metodele moderne îl fac pe elev să cerceteze, să coopereze, să descopere și să rezolve probleme." },
+  { q: 2, type: "open", kind: "Explică de ce",
+    text: "Explică de ce, într-o lecție despre sortarea tablourilor, explicația profesorului și activitatea practică a elevilor nu se exclud.",
+    model: "Paradigmele clasică și modernă sunt complementare. Explicația profesorului structurează cunoștințele: ce înseamnă un tablou sortat, cum funcționează pas cu pas un algoritm. Fără această bază, activitatea practică poate deveni încercare la întâmplare. Activitatea practică (implementarea, testarea, compararea a doi algoritmi în perechi, code review) transformă însă informația în competență și pune elevul în rol activ. Explicația trebuie deci completată, nu eliminată, prin metode interactive și activități practice.",
+    why: "The material says explicitly that the paradigms should not be set in absolute opposition: explanation remains useful for structuring knowledge but must be completed by interactive and practical methods.",
+    idea: "Complementaritatea paradigmelor: structurare prin explicație + aplicare prin activitate." },
+
+  // ───────── 3 ─────────
+  { q: 3, type: "mc", kind: "Definiție",
+    text: "Ce perspectivă descrie educația ca transformare treptată, pe termen lung, a ființei umane, care vizează dimensiunile cognitivă, afectiv-motivațională și comportamentală?",
+    opts: ["Educația ca proces", "Educația ca acțiune socială", "Educația ca interrelație umană", "Educația ca ansamblu de influențe"], ans: 0,
+    why: "The key words are 'gradual', 'long-term' and 'continuity and progressive accumulation'. Education as a process is not a one-off intervention. Learning to program is like that: nobody becomes a programmer from a single lesson.",
+    idea: "Educația ca proces: transformare continuă, prin acumulări progresive, orientată spre finalități." },
+  { q: 3, type: "tf", kind: "Adevărat / Fals",
+    text: "„Educația ca acțiune de conducere” înseamnă că profesorul exercită o autoritate puternică, iar elevul trebuie doar să execute.",
+    ans: 1,
+    why: "False. Educational leadership is a conscious orientation towards goals, not excessive authority. The teacher organises learning situations, monitors progress and helps the student become capable of self-direction, e.g. gradually moving from guided exercises to students planning their own project.",
+    idea: "Conducerea educațională urmărește un elev autonom și responsabil, capabil de autodirijare." },
+  { q: 3, type: "mc", kind: "Scenariu",
+    text: "Profesorul de informatică le cere elevilor feedback la finalul fiecărei lecții și își ajustează explicațiile. Elevii pun întrebări, propun soluții proprii și participă la stabilirea regulilor de lucru. Ce perspectivă este evidențiată?",
+    opts: ["Educația ca acțiune socială", "Educația ca interrelație umană", "Educația ca proces", "Educația ca acțiune de conducere"], ans: 1,
+    why: "Results come from communication, cooperation and mutual influence. The student is not a passive object: they interpret, react, give feedback and take part in their own formation.",
+    idea: "Educația ca interrelație umană: efort comun al educatorului și educatului." },
+  { q: 3, type: "mc", kind: "Scenariu",
+    text: "Un elev a învățat să programeze la ora de informatică, dar și dintr-un club de robotică, din tutoriale video și de la fratele mai mare. Ce perspectivă explică cel mai bine formarea lui?",
+    opts: ["Educația ca ansamblu de influențe", "Educația ca acțiune de conducere", "Educația ca acțiune socială", "Educația ca interrelație umană"], ans: 0,
+    why: "Education also includes systematic or spontaneous, intended or unintended influences from school, family, friends, cultural institutions, mass media and the social environment. This perspective includes formal, nonformal and informal education (Q6).",
+    idea: "Personalitatea se formează din influențe multiple: școală, familie, grup de prieteni, mass-media, mediu social." },
+  { q: 3, type: "mc", kind: "Scenariu",
+    text: "Statul decide că toți elevii trebuie să dobândească competențe digitale, pentru că societatea are nevoie de ele acum și în viitor, și le include în planificarea școlară. Ce perspectivă asupra educației este evidențiată?",
+    opts: ["Educația ca proces", "Educația ca interrelație umană", "Educația ca acțiune socială", "Educația ca ansamblu de influențe"], ans: 2,
+    why: "Education as a social action is planned on the basis of a social project. Society sets the values, goals and personality models it needs for the present and future, and education transmits social experience between generations.",
+    idea: "Educația ca acțiune socială: activitate planificată pe baza unui proiect social." },
+
+  // ───────── 4 ─────────
+  { q: 4, type: "mc", kind: "Definiție",
+    text: "De ce este importantă dimensiunea socială a scopului educației?",
+    opts: [
+      "Pentru că fiecare elev are un ritm propriu de dezvoltare",
+      "Pentru că pregătește persoana pentru integrarea în comunitate, asumarea rolurilor sociale și profesionale și respectarea valorilor colective",
+      "Pentru că elimină diferențele individuale dintre elevi",
+      "Pentru că urmărește exclusiv realizarea personală"
+    ], ans: 1,
+    why: "Society needs competent, responsible people who can contribute to its development. The other options describe the individual dimension, or distort it ('eliminating differences').",
+    idea: "Dimensiunea socială: integrare în comunitate, roluri sociale și profesionale, valori și norme colective." },
+  { q: 4, type: "mc", kind: "Consecințe",
+    text: "Neglijarea dimensiunii individuale poate transforma educația într-un proces...",
+    opts: ["rupt de nevoile comunității", "uniformizator", "prea flexibil", "exclusiv nonformal"], ans: 1,
+    why: "Ignoring individual aptitudes, interests and pace turns education into a uniformising process. The opposite risk, neglecting the social dimension, leads to formation cut off from the community's needs.",
+    idea: "Fără dimensiunea individuală: uniformizare. Fără dimensiunea socială: ruptură de nevoile comunității." },
+  { q: 4, type: "tf", kind: "Adevărat / Fals",
+    text: "Dimensiunea socială și cea individuală a scopului educației sunt opuse, iar școala trebuie să aleagă una dintre ele.",
+    ans: 1,
+    why: "False. The two dimensions are interdependent. A good programming course both prepares students for what society and the job market need and develops each student's own talents and interests.",
+    idea: "Cele două dimensiuni sunt interdependente." },
+  { q: 4, type: "mc", kind: "Scenariu",
+    text: "Proiectul final la informatică este o aplicație utilă școlii (de exemplu, evidența colectării selective a deșeurilor). Fiecare elev alege partea care îl interesează: interfața, baza de date sau algoritmii. Ce dimensiuni ale scopului educației sunt valorificate?",
+    opts: ["Doar dimensiunea socială", "Doar dimensiunea individuală", "Ambele, în mod interdependent", "Niciuna, este doar o activitate practică"], ans: 2,
+    why: "The project serves the community (social dimension) while letting each student build on their own interests and aptitudes (individual dimension). This is the interdependence the material describes.",
+    idea: "Scopul educației unește cerințele societății cu particularitățile individuale ale elevului." },
+  { q: 4, type: "mc", kind: "Definiție proprie",
+    text: "Conform definiției din material, acțiunea educațională se realizează prin...",
+    opts: [
+      "transmiterea unidirecțională a informației de la profesor la elev",
+      "cooperarea dintre educator și educabil",
+      "influențe exclusiv spontane ale mediului",
+      "decizia exclusivă a elevului"
+    ], ans: 1,
+    why: "The definition: a conscious, systematic, goal-oriented social activity, carried out through cooperation between educator and learner, to develop the learner's personality according to their individual traits and the present and future demands of society. Both dimensions appear in the same sentence.",
+    idea: "Acțiunea educațională: socială, conștientă, sistematică, orientată spre finalități, realizată prin cooperare." },
+  { q: 4, type: "open", kind: "Explică de ce",
+    text: "Explică de ce un curs de programare construit numai după cerințele pieței muncii, fără a ține cont de elevi, ar fi incomplet.",
+    model: "Un astfel de curs ar acoperi doar dimensiunea socială: pregătirea pentru roluri profesionale și nevoile societății. Ar neglija însă dimensiunea individuală: aptitudinile, interesele, nevoile și ritmul propriu al fiecărui elev. Educația ar deveni uniformizatoare. Elevii cu alte interese sau ritmuri nu și-ar valorifica potențialul și nu și-ar forma autonomia. Cele două dimensiuni sunt interdependente, deci un curs bun pregătește pentru piață, dar prin valorificarea potențialului fiecărui elev.",
+    why: "The answer should name both dimensions, say what is missing (individual) and the consequence the material gives (education becomes uniformising), then conclude with interdependence.",
+    idea: "Neglijarea oricărei dimensiuni dezechilibrează educația." },
+
+  // ───────── 5 ─────────
+  { q: 5, type: "mc", kind: "Scenariu",
+    text: "La informatică, elevii nu învață doar sintaxa, ci și cum să-și organizeze studiul, cum să caute informații și cum să-și verifice raționamentul. Ce funcție a educației este evidențiată?",
+    opts: ["Funcția culturală", "Funcția cognitivă", "Funcția economică", "Funcția de socializare"], ans: 1,
+    why: "The cognitive function is not only about accumulating information. It also develops cognitive abilities, intellectual work habits and the learning style.",
+    idea: "Funcția cognitivă: transmiterea organizată a cunoașterii + dezvoltarea capacităților cognitive și a stilului de învățare." },
+  { q: 5, type: "tf", kind: "Adevărat / Fals",
+    text: "Funcția cognitivă a educației urmărește doar acumularea unui volum cât mai mare de informații.",
+    ans: 1,
+    why: "False. The material says explicitly that the cognitive function does not aim only at accumulating information. It also develops thinking abilities, intellectual work skills and learning style.",
+    idea: "Cunoașterea transmisă trebuie să devină capacitate, nu doar volum de informații." },
+  { q: 5, type: "mc", kind: "Scenariu",
+    text: "Echipa de elevi respectă reguli comune de lucru: convenții de scriere a codului, comentarii respectuoase la code review, împărțirea responsabilităților. Ce funcție a educației se manifestă?",
+    opts: ["Funcția de socializare", "Funcția cognitivă", "Funcția culturală", "Funcția economică, efecte directe"], ans: 0,
+    why: "Socialisation means transmitting and assimilating the values, attitudes and behaviour patterns of a community. Here the individual learns to cooperate, respect rules and take part responsibly in group life.",
+    idea: "Funcția de socializare: individul învață să coopereze, să respecte reguli și să participe responsabil." },
+  { q: 5, type: "mc", kind: "Distincție",
+    text: "Elevii își formează rigoarea, responsabilitatea și obiceiul de a-și testa codul, atitudini care vor influența calitatea muncii lor viitoare. Despre ce este vorba?",
+    opts: [
+      "Efect direct al funcției economice",
+      "Efect indirect al funcției economice",
+      "Funcția culturală",
+      "Funcția de socializare, exclusiv"
+    ], ans: 1,
+    why: "Direct economic effects come from preparing and qualifying the workforce (e.g. teaching a professional skill). Indirect effects are capacities, attitudes and behaviours that influence the quality of professional activity, like rigour and responsibility.",
+    idea: "Funcția economică are efecte directe (calificarea forței de muncă) și indirecte (atitudini, comportamente)." },
+  { q: 5, type: "mc", kind: "Definiție",
+    text: "Ce presupune funcția culturală a educației?",
+    opts: [
+      "Calificarea forței de muncă",
+      "Conservarea, transmiterea și dezvoltarea valorilor culturale naționale și universale, inclusiv participarea la crearea culturii",
+      "Respectarea regulilor grupului",
+      "Organizarea educației nonformale"
+    ], ans: 1,
+    why: "The cultural function forms people who can know, understand and evaluate culture, and also take part in creating it, not just consume it.",
+    idea: "Funcția culturală: a cunoaște, a înțelege, a evalua și a crea cultură." },
+  { q: 5, type: "mc", kind: "Idee centrală",
+    text: "De ce este educația un fenomen social?",
+    opts: [
+      "Pentru că se desfășoară doar în școală",
+      "Pentru că asigură continuitatea experienței umane, integrarea persoanei în comunitate și dezvoltarea societății",
+      "Pentru că este obligatorie prin lege",
+      "Pentru că profesorul transmite informații unui grup"
+    ], ans: 1,
+    why: "Through its four functions, education both transmits the social heritage and forms people able to develop it further.",
+    idea: "Educația transmite patrimoniul social și formează persoane capabile să-l dezvolte." },
+
+  // ───────── 6 ─────────
+  { q: 6, type: "sort", kind: "Formal, nonformal sau informal?",
+    text: "Încadrează fiecare situație într-o formă a educației.",
+    cats: ["Formală", "Nonformală", "Informală"],
+    rows: [
+      ["Ora de informatică din orar, desfășurată după programa școlară.", 0],
+      ["Clubul de robotică al școlii, facultativ, după ore.", 1],
+      ["Un elev se uită din curiozitate la videoclipuri despre cum sunt făcute jocurile.", 2],
+      ["Un atelier de programare organizat de biblioteca județeană, la care participarea e opțională.", 1],
+      ["Discuțiile cu prietenii despre aplicațiile pe care le folosesc zilnic.", 2],
+      ["Cercul de ecologie în care se aplică noțiunile despre biodiversitate predate la clasă.", 1],
+      ["Știrile despre schimbările climatice văzute la televizor.", 2]
+    ],
+    why: "Formal: systematic, in school, regulated by official documents. Nonformal: institutionalised but outside the school process proper, flexible, varied, optional (clubs, workshops, circles). Informal: spontaneous, unorganised influences from family, friends, mass media and daily life, intended or not.",
+    idea: "Formal = sistematic și reglementat. Nonformal = organizat, dar flexibil și facultativ. Informal = spontan și continuu." },
+  { q: 6, type: "mc", kind: "Definiție",
+    text: "Care descriere corespunde educației nonformale?",
+    opts: [
+      "Conștientă, sistematică, organizată în instituții școlare și reglementată prin documente oficiale",
+      "Desfășurată într-un cadru instituționalizat, dar în afara procesului școlar propriu-zis; flexibilă, variată și facultativă",
+      "Influențe spontane și neorganizate ale familiei și mass-mediei",
+      "Educație exclusiv online"
+    ], ans: 1,
+    why: "Nonformal education is still organised, which separates it from informal, but it is outside the regular school process and optional, which separates it from formal. It completes and extends formal education.",
+    idea: "Educația nonformală completează și extinde educația formală." },
+  { q: 6, type: "mc", kind: "Scenariu",
+    text: "Un elev vine la oră convins de un „sfat” citit pe un forum, care este de fapt greșit. Profesorul îl folosește ca punct de plecare: clasa testează afirmația, o compară cu documentația și trage o concluzie. Ce relație dintre formele educației este ilustrată?",
+    opts: ["Formală – informală", "Formală – nonformală", "Nonformală – informală", "Niciuna, este o abatere de la lecție"], ans: 0,
+    why: "Informal experiences can bring concrete examples but also incorrect information. The school should use the useful ones and develop the critical thinking needed to evaluate informal influences, just like critically analysing climate-change information from the media in class.",
+    idea: "Școala valorifică experiențele informale utile și formează gândirea critică pentru evaluarea lor." },
+  { q: 6, type: "mc", kind: "Scenariu",
+    text: "Un elev pasionat de jocuri video (interes format spontan, acasă și între prieteni) se înscrie la un atelier de dezvoltare de jocuri organizat de un centru pentru tineret. Ce relație ilustrează situația?",
+    opts: [
+      "Educația formală verifică educația informală",
+      "Educația nonformală organizează pedagogic un interes format inițial în mediul informal",
+      "Educația informală înlocuiește educația formală",
+      "Educația nonformală devine formală"
+    ], ans: 1,
+    why: "Nonformal education gives pedagogical structure to interests and experiences that often start informally. The reverse also happens: skills gained in the workshop flow back into daily life as new informal experiences.",
+    idea: "Între nonformal și informal circulația este în ambele sensuri." },
+  { q: 6, type: "tf", kind: "Adevărat / Fals",
+    text: "Experiențele informale au întotdeauna un efect pozitiv asupra învățării școlare.",
+    ans: 1,
+    why: "False. Informal experiences can help school learning with concrete examples, but they can also transmit incorrect information or values incompatible with school objectives. That is why the school must develop critical thinking.",
+    idea: "Influențele informale trebuie evaluate critic, nu acceptate automat." },
+  { q: 6, type: "open", kind: "Explică de ce",
+    text: "După un hackathon organizat de o asociație, un elev începe din proprie inițiativă să-și ajute părinții să-și automatizeze bugetul familiei într-un tabel. Explică ce relație între formele educației ilustrează exemplul și de ce cele trei forme sunt toate necesare.",
+    model: "Exemplul arată relația nonformal → informal: competențele dobândite într-un cadru organizat, dar facultativ (hackathonul) sunt transferate în viața cotidiană și produc noi experiențe informale, spontane, în familie. Este situația din material în care participarea la o campanie de colectare selectivă duce la comportamente ecologice adoptate spontan acasă. Cele trei forme sunt necesare pentru că se completează reciproc. Educația formală oferă baza sistematică, cea nonformală o aplică și o extinde flexibil, iar cea informală o continuă în viața de zi cu zi. Efectele fiecăreia se repercutează asupra celorlalte și, împreună, contribuie la formarea personalității și la dezvoltarea competențelor.",
+    why: "A strong answer names the direction of influence (nonformal → informal), links it to the course example and ends with the main idea: the three forms complete each other.",
+    idea: "Cele trei forme sunt necesare, se completează reciproc, iar efectele fiecăreia se repercutează asupra celorlalte." },
+
+  // ───────── 7 ─────────
+  { q: 7, type: "mc", kind: "Definiție",
+    text: "Ce trebuie să precizeze un obiectiv operațional formulat după procedura lui Mager?",
+    opts: [
+      "Tema, durata și materialele lecției",
+      "Comportamentul final, condițiile de realizare și criteriul minim de reușită",
+      "Ce va preda profesorul și în ce ordine",
+      "Competența generală și valorile vizate"
+    ], ans: 1,
+    why: "Mager's three elements: what the student will do (observable behaviour), under what conditions, and how well (minimum success criterion). Without a criterion you cannot tell whether the objective was met.",
+    idea: "Mager = comportament + condiție + criteriu." },
+  { q: 7, type: "sort", kind: "Analiză Mager",
+    text: "Obiectiv: „Având la dispoziție un tablou de 10 numere întregi, elevii să scrie un program care sortează tabloul crescător, obținând rezultatul corect pentru minimum 4 din 5 seturi de date de test.” Identifică fiecare element.",
+    cats: ["Comportament", "Condiție", "Criteriu"],
+    rows: [
+      ["„Având la dispoziție un tablou de 10 numere întregi”", 1],
+      ["„să scrie un program care sortează tabloul crescător”", 0],
+      ["„obținând rezultatul corect pentru minimum 4 din 5 seturi de date de test”", 2]
+    ],
+    why: "The condition says what the student is given. The behaviour is the observable action (write a program that sorts). The criterion is the minimum threshold for success (4 out of 5 test sets). This mirrors 'having pictures of ten types of waste... correctly assigning at least eight'.",
+    idea: "Condiția: în ce context. Comportamentul: ce face elevul, observabil. Criteriul: cât de bine, minim." },
+  { q: 7, type: "sort", kind: "Analiză Mager",
+    text: "Obiectiv: „Fiind dat un program cu erori de logică, elevii să identifice minimum trei erori, în maximum zece minute.” Identifică fiecare element.",
+    cats: ["Comportament", "Condiție", "Criteriu"],
+    rows: [
+      ["„Fiind dat un program cu erori de logică”", 1],
+      ["„să identifice erorile”", 0],
+      ["„minimum trei erori, în maximum zece minute”", 2]
+    ],
+    why: "The criterion can combine quantity and time, exactly like the course objective 'identify at least three inappropriate practices in at most ten minutes'. Here it is the debugging equivalent.",
+    idea: "Criteriul poate fi cantitativ (minimum 3) și temporal (maximum 10 minute)." },
+  { q: 7, type: "multi", kind: "Greșit formulate",
+    text: "Care dintre aceste obiective sunt GREȘIT formulate după procedura lui Mager? Bifează toate variantele greșite.",
+    opts: [
+      "Elevii să înțeleagă importanța algoritmilor de sortare.",
+      "Profesorul să prezinte structura repetitivă while.",
+      "Pe baza unei fișe cu șase secvențe de cod, elevii să precizeze ce afișează fiecare, răspunzând corect la minimum cinci din șase.",
+      "Elevii să cunoască, să analizeze și să implementeze toate structurile de date.",
+      "Lucrând în perechi și având la dispoziție specificația, elevii să implementeze o funcție de căutare care trece minimum 8 din 10 teste.",
+      "Având la dispoziție imagini cu zece tipuri de deșeuri, elevii să clasifice deșeurile pe categorii, repartizând corect minimum opt dintre acestea."
+    ], ans: [0, 1, 3],
+    why: "'Understand' is not observable or measurable. 'The teacher presents' centres on the teacher, not the student. 'Know, analyse and implement all...' bundles several operations and has no condition or criterion. Good objectives centre on the student, use observable verbs, target one main operation and include a condition and a criterion.",
+    idea: "Obiectiv bun: centrat pe elev, verb observabil, o singură operație principală, condiție + criteriu." },
+  { q: 7, type: "mc", kind: "Verb operațional",
+    text: "Care verb este potrivit pentru un obiectiv operațional?",
+    opts: ["să înțeleagă", "să cunoască", "să implementeze", "să-și dea seama"], ans: 2,
+    why: "'Implement' produces something you can observe and measure (code that runs and passes tests). 'Understand', 'know' and 'realise' are internal states you cannot directly observe.",
+    idea: "Obiectivele operaționale folosesc verbe observabile și măsurabile." },
+  { q: 7, type: "mc", kind: "Analiză Mager",
+    text: "În obiectivul „Utilizând datele oferite despre cantitatea săptămânală de deșeuri produse de o școală, elevii să calculeze ponderea deșeurilor reciclabile, obținând rezultatul corect cu o abatere de maximum 5%”, care este criteriul de reușită?",
+    opts: [
+      "„Utilizând datele oferite despre cantitatea săptămânală de deșeuri”",
+      "„să calculeze ponderea deșeurilor reciclabile”",
+      "„cu o abatere de maximum 5%”",
+      "„deșeuri produse de o școală”"
+    ], ans: 2,
+    why: "The criterion is the accepted tolerance: the result counts as correct within a maximum 5% deviation. 'Using the data...' is the condition and 'calculate the share' is the behaviour. A programming equivalent: 'the program's result differs from the expected value by at most 0.01'.",
+    idea: "Criteriul stabilește pragul minim de reușită, aici o toleranță de eroare." },
+  { q: 7, type: "open", kind: "Reformulează",
+    text: "Reformulează după procedura lui Mager obiectivul: „Elevii să știe să folosească bucla for.” Apoi compară cu răspunsul model.",
+    model: "Exemplu: „Având la dispoziție un enunț și un mediu de programare, elevii să scrie un program care folosește o structură repetitivă for pentru a afișa suma numerelor de la 1 la n, obținând rezultatul corect pentru minimum trei din patru valori de test ale lui n.”\nCondiție: enunțul și mediul de programare. Comportament: să scrie un program cu for (verb observabil, o operație principală). Criteriu: corect pentru minimum 3 din 4 valori de test. Varianta inițială era greșită pentru că „să știe” nu este observabil și nu are condiție sau criteriu.",
+    why: "Check your version against the three elements: did you replace 'know' with an observable verb, state what the student is given, and set a measurable minimum?",
+    idea: "Orice obiectiv vag devine operațional prin verb observabil + condiție + criteriu." },
+
+  // ───────── 8 ─────────
+  { q: 8, type: "sort", kind: "Nivel de integrare",
+    text: "Ce nivel al integrării curriculare ilustrează fiecare exemplu?",
+    cats: LEVELS,
+    rows: [
+      ["La Informatică, tema „Sortarea tablourilor” leagă conținuturi studiate anterior: tablouri, structuri repetitive, funcții.", 0],
+      ["Tema „Inteligența artificială”: la Informatică se discută algoritmii, la Educație civică etica, la Matematică statistica. Fiecare disciplină o tratează separat, în ora ei.", 1],
+      ["Elevii evaluează calitatea apei unui râu: chimie pentru pH, biologie pentru bioindicatori, matematică pentru prelucrarea datelor, informatică pentru grafice, într-o evaluare comună.", 2],
+      ["Elevii pornesc de la o problemă reală a școlii (risipa de la cantină): aplică un chestionar, măsoară cantitățile, discută cu comunitatea și construiesc o aplicație de rezervare a meselor.", 3]
+    ],
+    why: "Intra: relating content within ONE subject. Multi: several subjects look at one theme but keep their autonomy. Inter: subjects actually intersect on a common problem and produce a joint result. Trans: starts from a real problem, goes beyond subject boundaries and puts the student's own work at the centre.",
+    idea: "Intra → multi → inter → trans: de la o singură disciplină la depășirea granițelor dintre discipline." },
+  { q: 8, type: "mc", kind: "Distincție",
+    text: "Tema „Deșeurile din plastic” este tratată la Chimie (polimerii), la Biologie (microplasticul) și la Informatică (grafice cu cantitățile de deșeuri). Fiecare profesor o abordează în ora lui, fără un produs comun. Ce nivel este?",
+    opts: LEVELS, ans: 1,
+    why: "Each subject contributes distinctly and keeps its autonomy. There is no common investigation or joint product. That is the difference between multidisciplinarity (juxtaposition) and interdisciplinarity (real intersection).",
+    idea: "Multidisciplinar: disciplinele își păstrează autonomia. Interdisciplinar: se intersectează efectiv." },
+  { q: 8, type: "mc", kind: "Scenariu",
+    text: "Elevii realizează o simulare a mișcării planetelor: aplică legi din fizică, rezolvă ecuațiile matematice și scriu programul care le reprezintă grafic. Rezultatul este o singură simulare comună. Ce nivel al integrării este?",
+    opts: LEVELS, ans: 2,
+    why: "The subjects actually intersect to investigate one common problem and form integrated competences, and the final product is shared. This is the same structure as the 'evaluate a river's water quality' example.",
+    idea: "Interdisciplinaritatea produce competențe integrate și un produs comun." },
+  { q: 8, type: "mc", kind: "Definiție",
+    text: "Ce pune în centru transdisciplinaritatea?",
+    opts: [
+      "Programa unei singure discipline",
+      "Juxtapunerea punctelor de vedere ale mai multor discipline",
+      "O problemă reală și demersurile elevului, depășind limitele disciplinelor",
+      "Specializarea profesorului"
+    ], ans: 2,
+    why: "Transdisciplinarity starts from a real problem (e.g. reducing the school's ecological footprint) and mobilises cognitive, social, civic, digital and practical competences together, with the student's own work at the centre.",
+    idea: "Transdisciplinaritatea: problemă reală + demersurile elevului + competențe mobilizate integrat." },
+  { q: 8, type: "mc", kind: "Scenariu",
+    text: "La Protecția mediului, tema „Poluarea apei” reunește conținuturi studiate anterior la aceeași disciplină: sursele de poluare, indicatorii de calitate, efectele asupra ecosistemelor și metodele de epurare. Care este echivalentul ei la ora de programare?",
+    opts: [
+      "Un proiect comun Informatică–Fizică",
+      "Un proiect pornit de la o problemă reală a comunității",
+      "O lecție de recapitulare care leagă variabilele, condițiile, buclele și funcțiile pentru a rezolva o problemă de informatică",
+      "O temă tratată separat la trei discipline"
+    ], ans: 2,
+    why: "Both are intradisciplinary: they connect previously studied content within the same subject so it can be used together.",
+    idea: "Intradisciplinaritatea relaționează conținuturi din cadrul aceleiași discipline." },
+
+  // ───────── 9 ─────────
+  { q: 9, type: "tf", kind: "Adevărat / Fals", trap: true,
+    text: "Cu cât nivelul de integrare curriculară este mai înalt, cu atât învățarea este mai riguroasă și mai profundă.",
+    ans: 1,
+    why: "False, it is a trade-off. Higher integration brings more real-life relevance, transfer and motivation, but it risks less rigour and depth (superficiality, not building on prior knowledge). Intradisciplinarity is the level that guarantees rigour and logical progression.",
+    idea: "Mai multă integrare = mai multă relevanță și motivație, dar risc de mai puțină rigoare și profunzime." },
+  { q: 9, type: "mc", kind: "Avantaje",
+    text: "Care este un avantaj specific intradisciplinarității?",
+    opts: [
+      "Se centrează pe viața reală și pe interesele elevului",
+      "Asigură rigoare și progres logic și valorifică achizițiile anterioare",
+      "Decompartimentează obiectele de studiu",
+      "Stimulează colaborarea dintre profesori de discipline diferite"
+    ], ans: 1,
+    why: "Staying within one subject gives structure: it fits the organisation into subjects, classes and lessons, builds on prior learning and clarifies content. Learning sorting algorithms after arrays and loops is a good example of that logical progression.",
+    idea: "Intradisciplinaritatea asigură fundamentele: rigoare, progres logic, aprofundare." },
+  { q: 9, type: "mc", kind: "Dezavantaje",
+    text: "„Disciplinele pot rămâne doar juxtapuse; există riscul superficialității.” Pentru ce nivel este acesta dezavantajul principal?",
+    opts: LEVELS, ans: 1,
+    why: "In multidisciplinarity each subject keeps its own view. If nobody links them, students get parallel perspectives side by side without a real connection.",
+    idea: "Multidisciplinaritatea oferă o perspectivă largă, dar riscă juxtapunerea." },
+  { q: 9, type: "mc", kind: "Dezavantaje",
+    text: "Ce dezavantaj al transdisciplinarității apare în material?",
+    opts: [
+      "Transferul între discipline este limitat",
+      "Libertatea față de discipline poate diminua rigoarea; există riscul nesprijinirii pe cunoștințe anterioare",
+      "Este incompatibilă cu proiectele",
+      "Ignoră interesele elevului"
+    ], ans: 1,
+    why: "If students build an app for a real community problem without solid basics in algorithms or data structures, the project can stay superficial. Limited transfer is a disadvantage of intradisciplinarity, the opposite end.",
+    idea: "Transdisciplinaritatea responsabilizează și motivează, dar poate sacrifica rigoarea." },
+  { q: 9, type: "mc", kind: "Condiții",
+    text: "Ce necesită interdisciplinaritatea pentru a funcționa bine?",
+    opts: [
+      "Renunțarea la disciplinele școlare",
+      "Coordonare și o bază disciplinară solidă",
+      "Un singur profesor pentru toate disciplinele",
+      "Evaluare exclusiv prin teste grilă"
+    ], ans: 1,
+    why: "Subjects can only intersect meaningfully if students already have each subject's basics and teachers coordinate. Otherwise learning can become superficial.",
+    idea: "Integrarea se sprijină pe fundamente disciplinare." },
+  { q: 9, type: "open", kind: "Explică de ce", trap: true,
+    text: "Un coleg propune ca tot anul de informatică să fie predat exclusiv prin proiecte transdisciplinare. Ce i-ai răspunde?",
+    model: "Niciun nivel al integrării nu este suficient în toate situațiile. Proiectele transdisciplinare au avantaje reale: pornesc de la viața reală, țin cont de interesele elevilor, îi responsabilizează și le valorifică experiențele cotidiene. Libertatea față de discipline poate însă diminua rigoarea, iar elevii pot să nu se sprijine pe cunoștințe anterioare sau să trateze superficial unele conținuturi, de exemplu să construiască o aplicație fără să înțeleagă algoritmii pe care îi folosesc. Intradisciplinaritatea asigură fundamentele, iar nivelurile superioare facilitează transferul și aplicarea lor în probleme complexe. Le-aș combina: lecții disciplinare pentru bazele programării și proiecte integrate în care elevii le aplică.",
+    why: "The key is the trade-off: more integration = more relevance and motivation, less guaranteed rigour. Then the conclusion from the material: intradisciplinarity provides the foundations and higher levels help transfer.",
+    idea: "Fundamente disciplinare + aplicare integrată, nu un singur nivel." },
+
+  // ───────── 10 ─────────
+  { q: 10, type: "sort", kind: "Disciplinar sau integrat?",
+    text: "Ce abordare a conținuturilor descrie fiecare afirmație?",
+    cats: ["Abordare disciplinară", "Abordare integrată"],
+    rows: [
+      ["Conținuturile sunt organizate în jurul unor teme, probleme sau proiecte.", 1],
+      ["Asigură structură, succesiune și profunzime într-un domeniu.", 0],
+      ["Necesită colaborare și coordonare între profesori.", 1],
+      ["Transferul spre alte discipline și situații nu se produce automat.", 0],
+      ["Formează competențe integrate, cheie și transversale.", 1],
+      ["Riscul principal este fragmentarea cunoașterii și izolarea disciplinelor.", 0],
+      ["Riscul principal este superficialitatea și diluarea specializării.", 1]
+    ],
+    why: "Disciplinary: structured, deep, matched to teachers' specialisation, but fragmented and with weak transfer. Integrated: organised around real problems, motivating, transfer-friendly, but needs coordination and risks superficiality.",
+    idea: "Fiecare abordare are punctele tari acolo unde cealaltă are riscuri." },
+  { q: 10, type: "mc", kind: "Scenariu",
+    text: "Timp de câteva săptămâni, elevii învață separat sintaxa, apoi structurile de date, fără nicio legătură cu probleme reale. Mulți întreabă: „La ce ne folosește?”. Ce dezavantaj al abordării disciplinare se vede?",
+    opts: [
+      "Lipsa de rigoare",
+      "Motivație redusă, pentru că informația e abstractă și izolată, iar relevanța practică nu e evidențiată",
+      "Diluarea specializării",
+      "Necesitatea colaborării între profesori"
+    ], ans: 1,
+    why: "The disciplinary approach can reduce motivation when information is abstract and isolated, and its practical relevance can stay hidden. Lack of rigour and diluted specialisation are risks of the integrated approach, not this one.",
+    idea: "Abordarea disciplinară riscă abstractizarea și ruptura de viață." },
+  { q: 10, type: "tf", kind: "Adevărat / Fals",
+    text: "Abordarea disciplinară și cea integrată trebuie folosite complementar: prima construiește fundamentul conceptual, a doua facilitează relaționarea și aplicarea cunoștințelor.",
+    ans: 0,
+    why: "True. This is the conclusion of Q10. In a programming course: teach recursion properly as a concept (disciplinary), then use it in an integrated project such as a fractal drawing in an art and maths project.",
+    idea: "Disciplinar = fundament. Integrat = relaționare și aplicare." },
+  { q: 10, type: "mc", kind: "Avantaje",
+    text: "Care NU este un avantaj al abordării integrate, conform materialului?",
+    opts: [
+      "Perspectiva globală",
+      "Flexibilitatea structurilor mentale",
+      "Rigoarea științifică și progresia logică",
+      "Capacitatea de rezolvare a problemelor profesionale, sociale și personale"
+    ], ans: 2,
+    why: "Scientific rigour and logical progression are advantages of the disciplinary approach. The integrated approach gives a global perspective, flexible thinking, motivation and problem-solving ability.",
+    idea: "Rigoarea vine din abordarea disciplinară, iar perspectiva globală din cea integrată." },
+  { q: 10, type: "mc", kind: "Transfer",
+    text: "De ce favorizează abordarea integrată transferul cunoașterii?",
+    opts: [
+      "Pentru că elimină teoria",
+      "Pentru că stabilește relații între cunoștințe, capacități și valori din domenii diferite și le corelează cu viața cotidiană și profesională",
+      "Pentru că e predată de un singur profesor",
+      "Pentru că se bazează pe memorare"
+    ], ans: 1,
+    why: "Transfer happens when knowledge is used across contexts. Integration creates those links on purpose, e.g. using a sorting algorithm to rank real survey data in a civic project.",
+    idea: "Relațiile dintre domenii și raportarea la viață produc transfer." },
+
+  // ───────── 11 ─────────
+  { q: 11, type: "mc", kind: "Cifre",
+    text: "Ce pondere aproximativă din Curriculumul Național au curriculumul nucleu și curriculumul la decizia școlii?",
+    opts: [
+      "Nucleu ~30–35% · CDȘ ~65–70%",
+      "Nucleu ~65–70% · CDȘ ~30–35%",
+      "Nucleu ~50% · CDȘ ~50%",
+      "Nucleu ~90% · CDȘ ~10%"
+    ], ans: 1,
+    why: "The common, compulsory core is the larger part, about 65–70%. The school-decided part is about 30–35%. Remember: the core guarantees a common base, while the school decides on roughly a third.",
+    idea: "Nucleu ≈ 65–70% (bază comună). CDȘ ≈ 30–35% (flexibilitate)." },
+  { q: 11, type: "mc", kind: "Definiție",
+    text: "Ce reprezintă curriculumul la decizia școlii în planul-cadru?",
+    opts: [
+      "Numărul minim de ore pentru disciplinele obligatorii",
+      "Diferența dintre numărul maxim și cel minim de ore prevăzute în planul-cadru",
+      "Orele de după program ale cluburilor",
+      "Toate orele de informatică"
+    ], ans: 1,
+    why: "The minimum number of hours belongs to the core. The gap up to the maximum is what the school decides how to use: deepening, extending, new subjects or integrated themes.",
+    idea: "CDȘ = ore maxime – ore minime din planul-cadru." },
+  { q: 11, type: "mc", kind: "Ce formă se potrivește?",
+    text: "Câțiva elevi au dificultăți la informatică. Școala folosește orele disponibile pentru a relua conținuturile obligatorii prin activități variate (exerciții ghidate, lucru în perechi, aplicații vizuale), fără conținuturi noi. Ce formă este?",
+    opts: CDS_FORMS, ans: 0,
+    why: "Deepened core curriculum works on the compulsory objectives and content by diversifying teaching and learning activities. It is aimed mainly at students with learning difficulties and uses the maximum of the hour range.",
+    idea: "Aprofundat = aceleași obiective obligatorii, activități diversificate, pentru elevii cu dificultăți." },
+  { q: 11, type: "mc", kind: "Ce formă se potrivește?",
+    text: "Un grup de elevi foarte interesați de programare parcurge și segmentele neobligatorii ale programei, cu obiective și unități de conținut noi. Ce formă este?",
+    opts: CDS_FORMS, ans: 1,
+    why: "Extended curriculum adds new objectives and content units and covers the non-compulsory segments too. It is aimed at students with aptitude and strong interest in a subject.",
+    idea: "Extins = se adaugă obiective și conținuturi, pentru elevii cu aptitudini și interes sporit." },
+  { q: 11, type: "mc", kind: "Ce formă se potrivește?",
+    text: "Școala propune opționalul „Dezvoltarea aplicațiilor mobile”, care nu există în programa obligatorie, are obiective și conținuturi noi și apare ca rubrică distinctă în catalog. Ce formă este?",
+    opts: CDS_FORMS, ans: 2,
+    why: "School-developed curriculum takes the form of activities, modules, projects or optional subjects outside the compulsory syllabus, with new objectives and content and a separate entry in the class register, like 'Managementul deșeurilor' for environmental protection.",
+    idea: "Elaborat în școală = opțional nou, rubrică separată în catalog." },
+  { q: 11, type: "tf", kind: "Adevărat / Fals",
+    text: "Curriculumul nucleu aprofundat se adresează, în special, elevilor cu aptitudini și interes sporit pentru o disciplină.",
+    ans: 1,
+    why: "False, that describes the extended curriculum. Deepened core curriculum is mainly for students with learning difficulties. A memory hook: 'aprofundat' goes deeper into the SAME content, 'extins' goes further with NEW content.",
+    idea: "Aprofundat → elevi cu dificultăți. Extins → elevi cu aptitudini și interes sporit." },
+  { q: 11, type: "open", kind: "Explică de ce",
+    text: "Explică de ce curriculumul la decizia școlii este o expresie a paradigmei educaționale moderne și ce rol rămâne curriculumului nucleu.",
+    model: "CDȘ concretizează principiile paradigmei moderne. Prin descentralizare și flexibilizare, școala își adaptează oferta. Prin centrarea pe elev, oferta se raportează la interesele, aptitudinile, nevoile și ritmurile elevilor. Prin aprofundare, extindere și opționale, parcursurile se individualizează. Problemele locale leagă școala de viață și de comunitate. Temele și proiectele integrate aduc inter- și transdisciplinaritate, iar activitățile practice formează competențe. Comunitatea participă, pentru că oferta poate fi stabilită cu elevii, părinții și reprezentanții locali. De exemplu, un opțional de programare pentru o problemă a orașului. Curriculumul nucleu rămâne necesar pentru că garantează baza comună, coerența sistemului și egalitatea șanselor. Nucleul asigură unitatea, iar CDȘ asigură diferențierea și adaptarea.",
+    why: "Connect CDȘ to the modern-paradigm features from Q2 (student-centred, adapted pace, links to life) and to integration from Q8–10, then balance it with what the core guarantees.",
+    idea: "Nucleul = bază comună și egalitate de șanse. CDȘ = flexibilitate, diferențiere, adaptare." }
+];
+
+// ---------- state ----------
+const S = { filter: new Set(), shuffle: false, mode: "all", queue: [], pos: 0, results: {}, cur: null };
+
+const $ = (id) => document.getElementById(id);
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  if (attrs) for (const [k, v] of Object.entries(attrs)) {
+    if (v == null || v === false) continue;
+    if (k === "class") el.className = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat()) if (c != null && c !== false) el.append(c.nodeType ? c : document.createTextNode(c));
+  return el;
+}
+function shuffled(a) { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; }
+const fmt = (n) => n.toFixed(2).replace(".", ",");
+const LETTERS = "ABCDEFGH";
+
+function poolForFilter() {
+  return ITEMS.map((_, i) => i).filter(i => S.filter.size === 0 || S.filter.has(ITEMS[i].q));
+}
+function startSession(mode, list) {
+  S.mode = mode;
+  let q = list || poolForFilter();
+  if (S.shuffle) q = shuffled(q);
+  S.queue = q; S.pos = 0; S.results = {}; S.cur = null;
+  render();
+}
+
+// ---------- filter UI ----------
+function renderChips() {
+  const box = $("chips"); box.textContent = "";
+  box.append(h("button", { class: "chip", "aria-pressed": String(S.filter.size === 0), onclick: () => { S.filter.clear(); afterFilter(); } }, "Toate"));
+  for (let n = 1; n <= 11; n++) {
+    const count = ITEMS.filter(it => it.q === n).length;
+    box.append(h("button", {
+      class: "chip", title: `${TOPICS[n]} (${count} itemi)`, "aria-pressed": String(S.filter.has(n)),
+      "aria-label": `Subiectul ${n}: ${TOPICS[n]}`,
+      onclick: () => { S.filter.has(n) ? S.filter.delete(n) : S.filter.add(n); afterFilter(); }
+    }, String(n)));
+  }
+  const hint = $("topicHint");
+  if (S.filter.size === 0) hint.textContent = `Toate cele 11 subiecte (${ITEMS.length} itemi). Alege unul sau mai multe numere pentru a te concentra doar pe ele.`;
+  else hint.textContent = [...S.filter].sort((a, b) => a - b).map(n => `${n}. ${TOPICS[n]}`).join(" · ");
+}
+function afterFilter() { try { localStorage.setItem("pp-filter", JSON.stringify([...S.filter])); } catch (e) {} renderChips(); startSession("all"); }
+
+// ---------- status ----------
+function renderStatus() {
+  const total = S.queue.length, done = Object.keys(S.results).length;
+  const ok = Object.values(S.results).filter(Boolean).length;
+  const label = S.mode === "review" ? "Recapitulare greșeli · " : "";
+  $("posTxt").innerHTML = "";
+  $("posTxt").append(label, "Itemul ", h("b", null, String(Math.min(S.pos + 1, total))), ` din ${total}`);
+  $("scoreTxt").innerHTML = "";
+  $("scoreTxt").append("Corecte: ", h("b", null, String(ok)), ` din ${done} răspunse`);
+  $("barFill").style.width = total ? `${(done / total) * 100}%` : "0";
+}
+
+// ---------- item rendering ----------
+function render() {
+  renderStatus();
+  const stage = $("stage"); stage.textContent = "";
+  if (S.pos >= S.queue.length) { stage.append(renderEnd()); return; }
+  const idx = S.queue[S.pos], it = ITEMS[idx];
+  if (!S.cur || S.cur.idx !== idx) S.cur = { idx, answered: false, pick: null, order: null, sel: new Set(), rowPick: {} };
+  const card = h("article", { class: "card", "aria-live": "polite" });
+  card.append(
+    h("div", { class: "meta" },
+      h("span", { class: "mono" }, `Subiectul ${it.q} · ${TOPICS[it.q]}`)),
+    h("div", { class: "meta" },
+      h("span", { class: "pill" }, it.kind),
+      it.trap ? h("span", { class: "pill trap" }, "Capcană frecventă") : null),
+    h("p", { class: "qtext" }, it.text)
+  );
+  const body = h("div", { class: "opts" });
+  card.append(body);
+  const fbSlot = h("div");
+  ({ mc: renderMC, tf: renderMC, multi: renderMulti, sort: renderSort, open: renderOpen })[it.type](it, body, card, fbSlot);
+  card.append(fbSlot);
+  stage.append(card);
+}
+
+function grade(correct) {
+  S.cur.answered = true;
+  S.results[S.cur.idx] = correct;
+  renderStatus();
+}
+
+function feedback(slot, it, correct, opts = {}) {
+  slot.textContent = "";
+  const isLast = S.pos + 1 >= S.queue.length;
+  const box = h("div", { class: "fb " + (correct ? "ok" : "bad") },
+    h("h3", null, opts.title || (correct ? "✓ Corect" : "✗ Greșit")),
+    opts.correctText ? h("p", null, h("span", { class: "lbl" }, "Răspunsul corect"), opts.correctText) : null,
+    h("p", null, h("span", { class: "lbl" }, "Why"), it.why),
+    h("p", { class: "idea" }, h("span", { class: "lbl" }, "Ideea de bază"), it.idea)
+  );
+  const next = h("button", { class: "btn", id: "nextBtn", onclick: () => { S.pos++; S.cur = null; render(); window.scrollTo({ top: 0, behavior: "smooth" }); } }, isLast ? "Vezi rezultatul" : "Următorul item →");
+  slot.append(box, h("div", { class: "actions", style: "margin-top:14px" }, next, h("span", { class: "hint" }, "sau apasă Enter")));
+  next.focus({ preventScroll: true });
+}
+
+function renderMC(it, body, card, fb) {
+  const opts = it.type === "tf" ? ["Adevărat", "Fals"] : it.opts;
+  if (!S.cur.order) S.cur.order = it.type === "tf" ? opts.map((_, i) => i) : shuffled(opts.map((_, i) => i));
+  const btns = [];
+  S.cur.order.forEach((oi, pos) => {
+    const b = h("button", { class: "opt", "data-oi": oi, onclick: () => choose(oi) },
+      h("span", { class: "k" }, LETTERS[pos]), h("span", null, opts[oi]));
+    btns.push(b); body.append(b);
+  });
+  card.append(h("p", { class: "hint", style: "margin:0" }, `Tastele 1–${opts.length} aleg o variantă.`));
+  function choose(oi) {
+    if (S.cur.answered) return;
+    const ok = oi === it.ans;
+    btns.forEach(b => {
+      const v = +b.dataset.oi; b.disabled = true;
+      if (v === it.ans) b.classList.add("is-ok");
+      else if (v === oi) b.classList.add("is-bad");
+    });
+    grade(ok);
+    feedback(fb, it, ok, { correctText: ok ? null : opts[it.ans] });
+  }
+  S.cur.choose = (pos) => { const oi = S.cur.order[pos]; if (oi != null) choose(oi); };
+}
+
+function renderMulti(it, body, card, fb) {
+  if (!S.cur.order) S.cur.order = shuffled(it.opts.map((_, i) => i));
+  const btns = [];
+  S.cur.order.forEach((oi, pos) => {
+    const b = h("button", { class: "opt", "aria-pressed": "false", "data-oi": oi, onclick: () => {
+      if (S.cur.answered) return;
+      S.cur.sel.has(oi) ? S.cur.sel.delete(oi) : S.cur.sel.add(oi);
+      b.setAttribute("aria-pressed", String(S.cur.sel.has(oi)));
+      b.querySelector(".k").textContent = S.cur.sel.has(oi) ? "☑" : "☐";
+    } }, h("span", { class: "k" }, "☐"), h("span", null, it.opts[oi]));
+    btns.push(b); body.append(b);
+  });
+  const check = h("button", { class: "btn", onclick: () => {
+    const want = new Set(it.ans);
+    let ok = want.size === S.cur.sel.size && [...want].every(x => S.cur.sel.has(x));
+    btns.forEach(b => {
+      const v = +b.dataset.oi; b.disabled = true;
+      const picked = S.cur.sel.has(v), should = want.has(v);
+      if (picked && should) b.classList.add("is-ok");
+      else if (picked && !should) b.classList.add("is-bad");
+      else if (!picked && should) b.classList.add("is-missed");
+    });
+    check.disabled = true;
+    grade(ok);
+    feedback(fb, it, ok, { correctText: ok ? null : "Variantele marcate cu verde (cele cu chenar punctat sunt cele pe care nu le-ai bifat)." });
+  } }, "Verifică");
+  card.append(h("div", { class: "actions" }, check, h("span", { class: "hint" }, "Bifează toate variantele care se potrivesc.")));
+}
+
+function renderSort(it, body, card, fb) {
+  body.className = "rows";
+  const rowEls = [];
+  it.rows.forEach(([txt, ans], ri) => {
+    const seg = h("div", { class: "seg", role: "group", "aria-label": "Alege categoria" });
+    const row = h("div", { class: "row" }, h("p", null, txt), seg);
+    it.cats.forEach((c, ci) => {
+      seg.append(h("button", { "aria-pressed": "false", "data-ci": ci, onclick: (e) => {
+        if (S.cur.answered) return;
+        S.cur.rowPick[ri] = ci;
+        seg.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(+x.dataset.ci === ci)));
+        check.disabled = Object.keys(S.cur.rowPick).length < it.rows.length;
+      } }, c));
+    });
+    rowEls.push({ row, seg, ans }); body.append(row);
+  });
+  const check = h("button", { class: "btn", disabled: true, onclick: () => {
+    let right = 0;
+    rowEls.forEach(({ row, seg, ans }, ri) => {
+      const ok = S.cur.rowPick[ri] === ans; if (ok) right++;
+      row.classList.add(ok ? "is-ok" : "is-bad");
+      seg.querySelectorAll("button").forEach(x => { x.disabled = true; if (+x.dataset.ci === ans) x.classList.add("right"); });
+      if (!ok) row.append(h("span", { class: "rowfix" }, "Corect: " + it.cats[ans]));
+    });
+    check.disabled = true;
+    const ok = right === it.rows.length;
+    grade(ok);
+    feedback(fb, it, ok, { title: ok ? `✓ Toate corecte (${right}/${it.rows.length})` : `✗ ${right} din ${it.rows.length} corecte` });
+  } }, "Verifică");
+  card.append(h("div", { class: "actions" }, check, h("span", { class: "hint" }, "Alege o categorie pentru fiecare rând.")));
+}
+
+function renderOpen(it, body, card, fb) {
+  const ta = h("textarea", { id: "open-" + S.cur.idx, placeholder: "Scrie-ți răspunsul aici, în câteva propoziții…", "aria-label": "Răspunsul tău" });
+  body.append(ta);
+  const reveal = h("button", { class: "btn", onclick: () => {
+    reveal.disabled = true; ta.readOnly = true;
+    const model = h("div", { class: "model" }, h("p", null, h("span", { class: "mono", style: "color:var(--pen);display:block;margin-bottom:4px" }, "Răspuns model")));
+    it.model.split("\n").forEach(p => model.append(h("p", { style: "margin-top:6px" }, p)));
+    const selfG = h("div", { class: "actions" },
+      h("span", { class: "hint", style: "width:100%" }, "Compară cu răspunsul tău. Cât de bine ai știut?"),
+      h("button", { class: "btn okb", onclick: () => done(true, "✓ Am știut") }, "Am știut"),
+      h("button", { class: "btn midb", onclick: () => done(false, "◐ Parțial: intră la recapitulare") }, "Parțial"),
+      h("button", { class: "btn badb", onclick: () => done(false, "✗ Nu am știut: intră la recapitulare") }, "Nu am știut"));
+    actions.replaceWith(h("div", { style: "display:flex;flex-direction:column;gap:12px" }, model, selfG));
+    function done(ok, title) { selfG.querySelectorAll("button").forEach(b => b.disabled = true); grade(ok); feedback(fb, it, ok, { title }); }
+  } }, "Arată răspunsul model");
+  const actions = h("div", { class: "actions" }, reveal, h("span", { class: "hint" }, "Încearcă întâi singur, apoi compară."));
+  card.append(actions);
+}
+
+// ---------- end screen ----------
+function renderEnd() {
+  const ids = S.queue, total = ids.length;
+  const ok = ids.filter(i => S.results[i]).length;
+  const wrong = ids.filter(i => S.results[i] === false);
+  const nota = total ? (ok / total) * 10 : 0;
+  const card = h("article", { class: "card end" });
+  card.append(
+    h("span", { class: "mono", style: "color:var(--muted)" }, S.mode === "review" ? "Runda de recapitulare încheiată" : "Sesiune încheiată"),
+    h("div", { class: "grade" }, h("span", { class: "n" }, fmt(nota)), h("span", null, h("b", null, `${ok} din ${total}`), " itemi corecți · echivalent notă pe scara 1–10"))
+  );
+  const byQ = {};
+  ids.forEach(i => { const q = ITEMS[i].q; byQ[q] = byQ[q] || { t: 0, ok: 0 }; byQ[q].t++; if (S.results[i]) byQ[q].ok++; });
+  const tb = h("tbody");
+  Object.keys(byQ).map(Number).sort((a, b) => a - b).forEach(q => {
+    const r = byQ[q], pct = r.ok / r.t * 100;
+    tb.append(h("tr", null,
+      h("td", null, h("b", null, `${q}. `), TOPICS[q]),
+      h("td", { class: "num" }, `${r.ok}/${r.t}`),
+      h("td", null, h("div", { class: "mini", "aria-hidden": "true" }, h("i", { style: `width:${pct}%` })))));
+  });
+  card.append(h("h2", null, "Pe subiecte"), h("div", { class: "tablewrap" }, h("table", null, h("thead", null, h("tr", null, h("th", null, "Subiect"), h("th", { class: "num" }, "Corecte"), h("th", null, ""))), tb)));
+  if (wrong.length) {
+    card.append(h("h2", null, "De recapitulat"),
+      h("ol", { class: "misslist" }, wrong.map(i => h("li", null, h("b", null, `Subiectul ${ITEMS[i].q}: `), ITEMS[i].text.length > 140 ? ITEMS[i].text.slice(0, 140) + "…" : ITEMS[i].text))));
+  } else {
+    card.append(h("p", { style: "margin:0" }, "Nicio greșeală în această rundă. Încearcă „Ordine aleatorie” sau alt subiect."));
+  }
+  card.append(h("div", { class: "actions" },
+    wrong.length ? h("button", { class: "btn", onclick: () => startSession("review", wrong) }, `Revizuiește greșelile (${wrong.length})`) : null,
+    h("button", { class: "btn ghost", onclick: () => startSession("all") }, S.filter.size ? "Reia subiectele selectate" : "Reia tot quizul")));
+  return card;
+}
+
+// ---------- keyboard ----------
+document.addEventListener("keydown", (e) => {
+  if (e.target.tagName === "TEXTAREA") return;
+  if (e.key === "Enter" && S.cur && S.cur.answered) { const n = $("nextBtn"); if (n && document.activeElement !== n) { e.preventDefault(); n.click(); } return; }
+  const it = S.cur && ITEMS[S.cur.idx];
+  if (it && (it.type === "mc" || it.type === "tf") && !S.cur.answered && /^[1-8]$/.test(e.key)) S.cur.choose(+e.key - 1);
+});
+
+$("shuffle").addEventListener("change", (e) => { S.shuffle = e.target.checked; try { localStorage.setItem("pp-shuffle", S.shuffle ? "1" : "0"); } catch (er) {} startSession(S.mode === "review" ? "all" : "all"); });
+
+function boot() {
+  try { const f = JSON.parse(localStorage.getItem("pp-filter") || "[]"); f.forEach(n => S.filter.add(n)); } catch (e) {}
+  try { S.shuffle = localStorage.getItem("pp-shuffle") === "1"; } catch (e) {}
+  $("shuffle").checked = S.shuffle;
+  renderChips();
+  startSession("all");
+}
+boot();
+</script>
